@@ -454,11 +454,11 @@
       <div class="form-group">
         <div class="form-group-title">Property &amp; Owner</div>
         <label>Owner Name</label>
-        <input type="text" id="ownerName" value="Mohammad Sarhan" oninput="update()">
+        <input type="text" id="ownerName" placeholder="Full legal name" oninput="update()">
         <label>Property Address Line 1</label>
-        <input type="text" id="addr1" value="10827 110th Ave NE" oninput="update()">
+        <input type="text" id="addr1" placeholder="Street address" oninput="update()">
         <label>Property Address Line 2</label>
-        <input type="text" id="addr2" value="Kirkland, WA 98033" oninput="update()">
+        <input type="text" id="addr2" placeholder="City, State ZIP" oninput="update()">
       </div>
 
       <!-- LEASE TERM -->
@@ -1553,9 +1553,9 @@ function clearForm() {
     if (el.type === 'select-one') el.selectedIndex = 0;
     else el.value = '';
   });
-  document.getElementById('ownerName').value = 'Mohammad Sarhan';
-  document.getElementById('addr1').value = '10827 110th Ave NE';
-  document.getElementById('addr2').value = 'Kirkland, WA 98033';
+  document.getElementById('ownerName').value = '';
+  document.getElementById('addr1').value = '';
+  document.getElementById('addr2').value = '';
   tenants = [{ name: '', role: 'Financially Responsible', phone: '', email: '' }];
   pets = [];
   vehicles = [];
