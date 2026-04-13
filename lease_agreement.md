@@ -51,7 +51,7 @@ The total amount of monthly rent due, which includes the monthly Premises rent, 
 
 **Late Charge:** Rent received more than five (5) days after the Rent Due Date shall result in an assessment against Resident of a **$50.00 late payment charge** plus **$20.00 each additional day** thereafter that rent has not been paid in full. Late fees may differ if capped by the local jurisdiction.
 
-**Returned Payment:** Any payment which fails to clear the bank shall be treated as unpaid rent and shall be subject to the aforementioned late payment charge, plus a **$45.00 returned payment fee**. Should Resident submit a payment that is dishonored or returned for non-sufficient funds, or should Resident offer payment to cure any default such as following receipt of a Notice to Pay Rent or Vacate, Resident shall make such payment by cashier's check, money order, or other payment method designated by Owner. Notwithstanding the foregoing, Owner may issue a Notice to Pay or Vacate immediately after the rental due date without waiting until late payment charges begin to accrue.
+**Returned Payment:** Any payment which fails to clear the bank shall be treated as unpaid rent and shall be subject to the aforementioned late payment charge, plus a **$45.00 returned payment fee**. Should Resident submit a payment that is dishonored or returned for non-sufficient funds, or should Resident offer payment to cure any default such as following receipt of a Notice to Pay Rent or Vacate, Resident shall make such payment through the Owner's designated payment portal or by such other payment method as designated by Owner in writing. Notwithstanding the foregoing, Owner may issue a Notice to Pay or Vacate immediately after the rental due date without waiting until late payment charges begin to accrue.
 
 **Notice Fees:** If for the reason of non-payment of rent, Owner shall give a statutory Notice to Pay or Vacate, or if Owner shall lawfully issue any other notice permitted pursuant to RCW 59.12 et seq. or RCW 59.18 et seq., Resident agrees to pay in addition to the delinquent rent and late payment charges provided for above, the sum of **$250.00** for preparing and giving the notice.
 
@@ -61,7 +61,7 @@ The total amount of monthly rent due, which includes the monthly Premises rent, 
 
 ### 1.4 Deposit
 
-The Resident shall pay a Security Deposit in the total amount of **{{SECURITY_DEPOSIT}}**, due in full prior to or on the lease commencement date. The deposit is for all purposes, including unpaid rent, damage, cleaning, late payment, utilities, keys, and other charges. The Resident's liability is not limited by the amount of the deposit. The Resident is prohibited from applying any amount of the deposit to rental or other payments owed to the Owner.
+The Resident shall pay a Security Deposit in the total amount of **{{SECURITY_DEPOSIT}}**, due in full prior to or on the lease commencement date. The deposit is for all purposes, including unpaid rent, damage, cleaning, late payment, utilities, keys, and other charges, and shall be kept in an account with a financial institution (bank or credit union), whose name is Forbes Creek Rentals, Inc, Chase Bank. The Resident's liability is not limited by the amount of the deposit. The Resident is prohibited from applying any amount of the deposit to rental or other payments owed to the Owner.
 
 Any refund will be by a single check payable to all individual Residents and they shall apportion any refund among themselves. Owner's itemized statement for retaining any of the deposit, together with any refund owing, shall be sent to the Resident's forwarding address in accordance with RCW 59.18.280 after the termination of this Agreement and vacation of the Premises, conditioned upon the following:
 
@@ -81,13 +81,13 @@ F. Resident's payment of any fees or charges imposed pursuant to this Agreement,
 
 ### 1.5 Non-Refundable Fees
 
-The Resident acknowledges and agrees that a non-refundable charge will be deducted from the security deposit for the specific purpose of covering N/A, in the amount of N/A. This deduction shall not be refunded under any circumstances. It is further clarified that the Resident shall not be charged for normal cleaning if he/she has already paid a non-refundable cleaning fee.
+The Resident acknowledges and agrees that a non-refundable charge will be deducted from the security deposit for the specific purpose of covering **{{NON_REFUNDABLE_FEE_PURPOSE}}**, in the amount of **{{NON_REFUNDABLE_FEE_AMOUNT}}**. This deduction shall not be refunded under any circumstances. It is further clarified that the Resident shall not be charged for normal cleaning if he/she has already paid a non-refundable cleaning fee.
 
 ---
 
 ### 1.6 Prepayments
 
-Resident shall make a prepayment toward last month's rent of N/A. Resident may only apply this prepayment to the lawful last month of the tenancy, whether following timely notice to terminate a month-to-month tenancy, the last month of a fixed term tenancy that has not been renewed or extended, or a tenancy which was otherwise terminated in accord with applicable law. Resident is required to pay any difference between the prepayment and the actual last month's rent where the rent has increased before the last month of tenancy.
+Resident shall make a prepayment toward last month's rent of **{{LAST_MONTH_PREPAYMENT}}**. Resident may only apply this prepayment to the lawful last month of the tenancy, whether following timely notice to terminate a month-to-month tenancy, the last month of a fixed term tenancy that has not been renewed or extended, or a tenancy which was otherwise terminated in accord with applicable law. Resident is required to pay any difference between the prepayment and the actual last month's rent where the rent has increased before the last month of tenancy.
 
 ---
 
@@ -799,31 +799,9 @@ Resident Initials: __________ Date: __________
 
 ---
 
-## SECTION 9 — CREDIT REPORTING ADDENDUM
+## SECTION 9 — PET ADDENDUM
 
-### 9.1 Credit Reporting
-
-This Addendum allows Owner to report on-time or delinquent payments made by the Resident. Starting **{{LEASE_START_DATE}}**, reporting will be based on the following monthly charges:
-
-| Description | Amount |
-|---|---|
-| Rent Income | {{MONTHLY_RENT}} |
-| Pet Rent | {{PET_RENT}} |
-| **Total** | **{{TOTAL_MONTHLY}}** |
-
-Owner will provide accurate information to a credit reporting service on at least a monthly basis. Owner will work with the reporting service to comply with the requirements of the Fair Credit Reporting Act, 15 U.S.C. § 1681, et seq., and any and all other applicable federal or state laws.
-
----
-
-**By initialing below, you acknowledge and agree to the terms in Section 9.**
-
-Resident Initials: __________ Date: __________
-
----
-
-## SECTION 10 — PET ADDENDUM
-
-### 10.1 General Information
+### 9.1 General Information
 
 | | |
 |---|---|
@@ -831,20 +809,20 @@ Resident Initials: __________ Date: __________
 | Residents' Names | {{TENANT_NAMES}} |
 | Property Address | {{PROPERTY_ADDRESS_1}}, {{PROPERTY_ADDRESS_2}} |
 
-### 10.2 Authorized Pets
+### 9.2 Authorized Pets
 
 The Owner will allow the Resident to have the following pets in the designated Premises:
 
 {{PET_LIST}}
 
-### 10.3 Fee Information
+### 9.3 Fee Information
 
 | Description | Amount |
 |---|---|
 | Refundable Pet Deposit | {{PET_DEPOSIT}} |
 | Monthly Pet Rent | {{PET_RENT}} |
 
-### 10.4 Pet Terms and Conditions
+### 9.4 Pet Terms and Conditions
 
 - The pet must be registered with the county of the above-listed address.
 - The pet must have proof of all shots and vaccinations and be spayed or neutered.
@@ -862,11 +840,11 @@ As a condition of occupancy, the Resident agrees to provide a copy of an Insuran
 
 **Flea Infestation:** If there is a flea infestation after the Residents have moved in which makes the property unsuitable for rent, the Residents are responsible for the loss of rent to the Owner. The average flea treatment takes 45–60 days.
 
-### 10.5 Emergency
+### 9.5 Emergency
 
 In the case of an emergency where there is reasonable cause to believe that a pet has been left alone in the Residents' unit or is creating a disturbance, Owner shall attempt to contact Tenant first. If unsuccessful, Owner shall be permitted to enter the rented premises and may take any appropriate actions with respect to the pet's care. The Resident is responsible for any such costs.
 
-### 10.6 Required Move-Out Cleaning
+### 9.6 Required Move-Out Cleaning
 
 The Resident agrees to hire and pay professionals to address the following at move-out:
 
@@ -877,15 +855,15 @@ Professionals must perform the above cleaning within three (3) days after move-o
 
 ---
 
-**By signing below, you acknowledge and agree to the terms in Section 10.**
+**By signing below, you acknowledge and agree to the terms in Section 9.**
 
 Resident Signature: __________________________________ Date: __________
 
 ---
 
-## SECTION 11 — PROPERTY CONDITION REPORT
+## SECTION 10 — PROPERTY CONDITION REPORT
 
-### 11.1 General Information
+### 10.1 General Information
 
 | | |
 |---|---|
@@ -895,11 +873,11 @@ Resident Signature: __________________________________ Date: __________
 | Number of Smoke/CO Alarms | 8 |
 | Tested On | {{AGREEMENT_DATE}} |
 
-### 11.2 Move-In Condition Report
+### 10.2 Move-In Condition Report
 
 It is in the best interest of the Residents to take pictures on or within 48 hours of moving in to verify no pre-existing damage at the property.
 
-### 11.3 Inspection Summary
+### 10.3 Inspection Summary
 
 The Resident believes the Premises contains the following defects, damages, or other physical conditions at the commencement of occupancy:
 
@@ -922,15 +900,15 @@ If the Residents find any damage or excessive sign of wear and tear, they must r
 
 ---
 
-**By signing below, you acknowledge and agree to the terms in Section 11.**
+**By signing below, you acknowledge and agree to the terms in Section 10.**
 
 Resident Signature: __________________________________ Date: __________
 
 ---
 
-## SECTION 12 — YARD / LAWN MAINTENANCE
+## SECTION 11 — YARD / LAWN MAINTENANCE
 
-### 12.1 Yard / Lawn Maintenance Requirements
+### 11.1 Yard / Lawn Maintenance Requirements
 
 In renting this house from Owner, it is agreed and understood that the Residents are required to do the following:
 
@@ -950,11 +928,11 @@ G. **BBQ Grill** — Keep at least 10 feet away from the structure of the house.
 
 H. No trees can be removed without the Owner's written approval.
 
-### 12.2 Non-Compliance
+### 11.2 Non-Compliance
 
 Residents shall be served a Ten-Day Notice to Comply or Vacate Premises in accordance with the Washington State Landlord-Tenant Act. With non-compliance, the Owner, at their option, may pursue legal action for eviction, or increase rent by Market Value per month and maintain the lawn/yard service at the Owner's expense.
 
-### 12.3 Winterizing Water Pipes
+### 11.3 Winterizing Water Pipes
 
 When freezing weather is expected, take the following precautions:
 
@@ -965,7 +943,7 @@ When freezing weather is expected, take the following precautions:
 
 ---
 
-**By signing below, you acknowledge and agree to the terms in Section 12.**
+**By signing below, you acknowledge and agree to the terms in Section 11.**
 
 Resident Signature: __________________________________ Date: __________
 
