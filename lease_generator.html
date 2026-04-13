@@ -1,0 +1,2047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lease Agreement Generator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --ink-mid: #444;
+    --ink-light: #777;
+    --paper: #faf9f7;
+    --paper-mid: #f0ede8;
+    --paper-dark: #e5e0d8;
+    --accent: #8b3a2a;
+    --accent-light: #f5ebe8;
+    --border: #d4cfc7;
+    --panel-bg: #f7f5f2;
+    --preview-bg: #fff;
+    --highlight: #fffbe6;
+    --sidebar-w: 380px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Instrument Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 56px;
+    background: var(--ink);
+    color: #fff;
+    flex-shrink: 0;
+    border-bottom: 2px solid var(--accent);
+  }
+  .topbar-title {
+    font-family: 'Crimson Pro', serif;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .topbar-title span { color: #c97b68; }
+  .topbar-actions { display: flex; gap: 10px; align-items: center; }
+
+  .btn {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 18px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.02em;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+  .btn-primary:hover { background: #723020; }
+  .btn-ghost {
+    background: transparent;
+    color: #ccc;
+    border: 1px solid #555;
+  }
+  .btn-ghost:hover { border-color: #999; color: #fff; }
+
+  /* ── MAIN LAYOUT ── */
+  .main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── FORM PANEL ── */
+  .form-panel {
+    width: var(--sidebar-w);
+    flex-shrink: 0;
+    background: var(--panel-bg);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .form-scroll {
+    overflow-y: auto;
+    flex: 1;
+    padding: 20px 20px 40px;
+  }
+  .form-scroll::-webkit-scrollbar { width: 5px; }
+  .form-scroll::-webkit-scrollbar-thumb { background: var(--paper-dark); border-radius: 3px; }
+
+  .form-group {
+    margin-bottom: 24px;
+  }
+  .form-group-title {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    padding: 6px 0 10px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 14px;
+  }
+
+  label {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--ink-mid);
+    margin-bottom: 4px;
+    letter-spacing: 0.02em;
+  }
+  input, select, textarea {
+    width: 100%;
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 13px;
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: #fff;
+    color: var(--ink);
+    margin-bottom: 10px;
+    transition: border-color 0.15s;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: var(--highlight);
+  }
+  textarea { resize: vertical; min-height: 60px; }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .field-row label, .field-row input, .field-row select { margin-bottom: 0; }
+  .field-row > div { margin-bottom: 10px; }
+
+  /* tenant cards */
+  .tenant-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 10px;
+    position: relative;
+  }
+  .tenant-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .tenant-num {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .btn-remove {
+    background: none;
+    border: none;
+    color: var(--ink-light);
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    padding: 0 4px;
+    transition: color 0.15s;
+  }
+  .btn-remove:hover { color: var(--accent); }
+
+  .btn-add {
+    width: 100%;
+    padding: 8px;
+    background: var(--accent-light);
+    border: 1px dashed #c97b68;
+    border-radius: 4px;
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+    font-family: 'Instrument Sans', sans-serif;
+    letter-spacing: 0.03em;
+  }
+  .btn-add:hover { background: #eeddd9; }
+
+  /* pet / vehicle cards */
+  .item-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+  .item-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .item-label {
+    font-size: 11px;
+    color: var(--ink-light);
+    font-weight: 500;
+  }
+
+  /* ── PREVIEW PANEL ── */
+  .preview-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--paper-mid);
+  }
+
+  .preview-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 20px;
+    background: var(--paper-dark);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .preview-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    flex: 1;
+  }
+  .incomplete-count {
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .preview-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 48px;
+  }
+  .preview-scroll::-webkit-scrollbar { width: 6px; }
+  .preview-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .preview-doc {
+    max-width: 760px;
+    margin: 0 auto;
+    background: var(--preview-bg);
+    box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+    padding: 64px 72px;
+    font-family: 'Crimson Pro', serif;
+    font-size: 14.5px;
+    line-height: 1.75;
+    color: var(--ink);
+    min-height: 1100px;
+  }
+
+  .preview-doc h1 {
+    font-size: 26px;
+    font-weight: 600;
+    text-align: center;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+    color: var(--ink);
+  }
+  .preview-doc h2 {
+    font-size: 13px;
+    font-weight: 400;
+    text-align: center;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    margin-bottom: 24px;
+  }
+  .doc-meta {
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px 18px;
+    margin-bottom: 28px;
+    font-size: 13px;
+    line-height: 1.9;
+  }
+  .doc-meta strong { color: var(--ink-mid); font-weight: 500; }
+
+  .preview-doc hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 20px 0;
+  }
+
+  .preview-doc h3 {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 28px 0 6px;
+    padding-top: 4px;
+    border-top: 2px solid var(--accent-light);
+  }
+  .preview-doc h4 {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink-mid);
+    margin: 16px 0 4px;
+  }
+  .preview-doc p {
+    margin-bottom: 10px;
+    text-align: justify;
+  }
+  .preview-doc ol, .preview-doc ul {
+    margin: 8px 0 10px 22px;
+  }
+  .preview-doc li { margin-bottom: 4px; }
+  .preview-doc blockquote {
+    border-left: 3px solid var(--accent);
+    padding: 6px 0 6px 16px;
+    color: var(--ink-mid);
+    margin: 10px 0;
+    font-style: italic;
+  }
+
+  table.preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0 14px;
+    font-size: 13.5px;
+  }
+  table.preview-table th {
+    background: var(--panel-bg);
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-mid);
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    text-align: left;
+  }
+  table.preview-table td {
+    padding: 7px 12px;
+    border: 1px solid var(--border);
+    vertical-align: top;
+  }
+  table.preview-table tr:nth-child(even) td { background: var(--paper); }
+
+  .placeholder {
+    background: #fff3cd;
+    color: #856404;
+    border-radius: 2px;
+    padding: 0 3px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+  }
+  .filled {
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .sig-block {
+    margin: 16px 0;
+    padding: 14px 0;
+    border-top: 1px solid var(--border);
+  }
+  .sig-line {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 10px;
+    align-items: flex-end;
+  }
+  .sig-field {
+    flex: 2;
+    border-bottom: 1px solid var(--ink);
+    padding-bottom: 2px;
+    min-height: 28px;
+    font-size: 13px;
+    color: var(--ink-mid);
+  }
+  .sig-date {
+    flex: 1;
+    border-bottom: 1px solid var(--ink);
+    padding-bottom: 2px;
+    min-height: 28px;
+  }
+  .sig-caption {
+    font-size: 11px;
+    color: var(--ink-light);
+    font-family: 'Instrument Sans', sans-serif;
+    margin-top: 3px;
+  }
+
+  .initials-block {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    margin: 16px 0;
+  }
+  .initials-line {
+    border-bottom: 1px solid var(--ink);
+    width: 80px;
+    height: 24px;
+  }
+  .initials-caption {
+    font-size: 12px;
+    color: var(--ink-mid);
+    font-family: 'Instrument Sans', sans-serif;
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-title">Lease <span>Generator</span></div>
+  <div class="topbar-actions">
+    <button class="btn btn-ghost" onclick="clearForm()">Clear Form</button>
+    <button class="btn btn-primary" onclick="generatePDF()">⬇ Download PDF</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ══ FORM PANEL ══ -->
+  <div class="form-panel">
+    <div class="form-scroll">
+
+      <!-- PROPERTY & OWNER -->
+      <div class="form-group">
+        <div class="form-group-title">Property &amp; Owner</div>
+        <label>Owner Name</label>
+        <input type="text" id="ownerName" value="Mohammad Sarhan" oninput="update()">
+        <label>Property Address Line 1</label>
+        <input type="text" id="addr1" value="10827 110th Ave NE" oninput="update()">
+        <label>Property Address Line 2</label>
+        <input type="text" id="addr2" value="Kirkland, WA 98033" oninput="update()">
+        <label>Agreement Date</label>
+        <input type="date" id="agreementDate" oninput="update()">
+      </div>
+
+      <!-- LEASE TERM -->
+      <div class="form-group">
+        <div class="form-group-title">Lease Term</div>
+        <div class="field-row">
+          <div>
+            <label>Start Date</label>
+            <input type="date" id="leaseStart" oninput="calcTerm()">
+          </div>
+          <div>
+            <label>End Date</label>
+            <input type="date" id="leaseEnd" oninput="calcTerm()">
+          </div>
+        </div>
+        <label>Term (months — auto-calculated)</label>
+        <input type="text" id="leaseTerm" placeholder="e.g. 12" oninput="update()" readonly style="background:#f5f5f5;color:#888;">
+      </div>
+
+      <!-- FINANCIALS -->
+      <div class="form-group">
+        <div class="form-group-title">Financials</div>
+        <div class="field-row">
+          <div>
+            <label>Monthly Rent</label>
+            <input type="text" id="monthlyRent" placeholder="$0.00" oninput="calcTotal()">
+          </div>
+          <div>
+            <label>Security Deposit</label>
+            <input type="text" id="secDeposit" placeholder="$0.00" oninput="update()">
+          </div>
+        </div>
+        <div class="field-row">
+          <div>
+            <label>Pet Deposit</label>
+            <input type="text" id="petDeposit" placeholder="$0.00" oninput="update()">
+          </div>
+          <div>
+            <label>Pet Rent / mo</label>
+            <input type="text" id="petRent" placeholder="$0.00" oninput="calcTotal()">
+          </div>
+        </div>
+        <label>Total Monthly (auto-calculated)</label>
+        <input type="text" id="totalMonthly" readonly style="background:#f5f5f5;color:#888;" placeholder="$0.00">
+        <label>Application Fee (per applicant)</label>
+        <input type="text" id="appFee" placeholder="$49.00" oninput="update()">
+        <div class="field-row">
+          <div>
+            <label>Rent Increase Date</label>
+            <input type="date" id="rentIncDate" oninput="update()">
+          </div>
+          <div>
+            <label>Rent Increase Amount</label>
+            <input type="text" id="rentIncAmt" placeholder="$100" oninput="update()">
+          </div>
+        </div>
+      </div>
+
+      <!-- TENANTS -->
+      <div class="form-group">
+        <div class="form-group-title">Tenants / Occupants</div>
+        <div id="tenantList"></div>
+        <button class="btn-add" onclick="addTenant()">+ Add Tenant / Occupant</button>
+      </div>
+
+      <!-- PETS -->
+      <div class="form-group">
+        <div class="form-group-title">Pets</div>
+        <div id="petList"></div>
+        <button class="btn-add" onclick="addPet()">+ Add Pet</button>
+      </div>
+
+      <!-- VEHICLES -->
+      <div class="form-group">
+        <div class="form-group-title">Authorized Vehicles</div>
+        <div id="vehicleList"></div>
+        <button class="btn-add" onclick="addVehicle()">+ Add Vehicle</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ PREVIEW PANEL ══ -->
+  <div class="preview-panel">
+    <div class="preview-toolbar">
+      <span class="preview-label">Live Preview</span>
+      <span class="incomplete-count" id="incompleteCount"></span>
+    </div>
+    <div class="preview-scroll">
+      <div class="preview-doc" id="previewDoc"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let tenants = [
+  { name: '', role: 'Financially Responsible', phone: '', email: '' }
+];
+let pets = [];
+let vehicles = [];
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+window.onload = () => {
+  renderTenantCards();
+  renderPetCards();
+  renderVehicleCards();
+  update();
+};
+
+// ═══════════════════════════════════════════════
+// TENANT MANAGEMENT
+// ═══════════════════════════════════════════════
+function addTenant() {
+  tenants.push({ name: '', role: 'Other Occupant', phone: '', email: '' });
+  renderTenantCards();
+  update();
+}
+function removeTenant(i) {
+  if (tenants.length === 1) return;
+  tenants.splice(i, 1);
+  renderTenantCards();
+  update();
+}
+function renderTenantCards() {
+  const el = document.getElementById('tenantList');
+  el.innerHTML = tenants.map((t, i) => `
+    <div class="tenant-card">
+      <div class="tenant-card-header">
+        <span class="tenant-num">Tenant ${i + 1}</span>
+        ${tenants.length > 1 ? `<button class="btn-remove" onclick="removeTenant(${i})">×</button>` : ''}
+      </div>
+      <label>Full Name</label>
+      <input type="text" value="${esc(t.name)}" placeholder="Full legal name"
+        oninput="tenants[${i}].name=this.value;update()">
+      <label>Role</label>
+      <select onchange="tenants[${i}].role=this.value;update()">
+        <option ${t.role==='Financially Responsible'?'selected':''}>Financially Responsible</option>
+        <option ${t.role==='Other Occupant'?'selected':''}>Other Occupant</option>
+      </select>
+      <label>Phone</label>
+      <input type="tel" value="${esc(t.phone)}" placeholder="(555) 555-5555"
+        oninput="tenants[${i}].phone=this.value;update()">
+      <label>Email</label>
+      <input type="email" value="${esc(t.email)}" placeholder="email@example.com"
+        oninput="tenants[${i}].email=this.value;update()">
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════
+// PET MANAGEMENT
+// ═══════════════════════════════════════════════
+function addPet() {
+  pets.push({ name: '', breed: '', weight: '', age: '' });
+  renderPetCards();
+  update();
+}
+function removePet(i) {
+  pets.splice(i, 1);
+  renderPetCards();
+  update();
+}
+function renderPetCards() {
+  const el = document.getElementById('petList');
+  if (pets.length === 0) {
+    el.innerHTML = '<p style="font-size:12px;color:#999;margin-bottom:8px;">No pets added.</p>';
+    return;
+  }
+  el.innerHTML = pets.map((p, i) => `
+    <div class="item-card">
+      <div class="item-card-header">
+        <span class="item-label">Pet ${i + 1}</span>
+        <button class="btn-remove" onclick="removePet(${i})">×</button>
+      </div>
+      <div class="field-row">
+        <div><label>Name</label><input type="text" value="${esc(p.name)}" placeholder="Buddy"
+          oninput="pets[${i}].name=this.value;update()"></div>
+        <div><label>Breed / Type</label><input type="text" value="${esc(p.breed)}" placeholder="Lab Mix"
+          oninput="pets[${i}].breed=this.value;update()"></div>
+      </div>
+      <div class="field-row">
+        <div><label>Weight (lbs)</label><input type="text" value="${esc(p.weight)}" placeholder="45"
+          oninput="pets[${i}].weight=this.value;update()"></div>
+        <div><label>Age (years)</label><input type="text" value="${esc(p.age)}" placeholder="3"
+          oninput="pets[${i}].age=this.value;update()"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════
+// VEHICLE MANAGEMENT
+// ═══════════════════════════════════════════════
+function addVehicle() {
+  vehicles.push({ make: '', model: '', color: '', plate: '', year: '' });
+  renderVehicleCards();
+  update();
+}
+function removeVehicle(i) {
+  vehicles.splice(i, 1);
+  renderVehicleCards();
+  update();
+}
+function renderVehicleCards() {
+  const el = document.getElementById('vehicleList');
+  if (vehicles.length === 0) {
+    el.innerHTML = '<p style="font-size:12px;color:#999;margin-bottom:8px;">No vehicles added.</p>';
+    return;
+  }
+  el.innerHTML = vehicles.map((v, i) => `
+    <div class="item-card">
+      <div class="item-card-header">
+        <span class="item-label">Vehicle ${i + 1}</span>
+        <button class="btn-remove" onclick="removeVehicle(${i})">×</button>
+      </div>
+      <div class="field-row">
+        <div><label>Year</label><input type="text" value="${esc(v.year)}" placeholder="2022"
+          oninput="vehicles[${i}].year=this.value;update()"></div>
+        <div><label>Make</label><input type="text" value="${esc(v.make)}" placeholder="Toyota"
+          oninput="vehicles[${i}].make=this.value;update()"></div>
+      </div>
+      <div class="field-row">
+        <div><label>Model</label><input type="text" value="${esc(v.model)}" placeholder="Camry"
+          oninput="vehicles[${i}].model=this.value;update()"></div>
+        <div><label>Color</label><input type="text" value="${esc(v.color)}" placeholder="Silver"
+          oninput="vehicles[${i}].color=this.value;update()"></div>
+      </div>
+      <label>License Plate</label>
+      <input type="text" value="${esc(v.plate)}" placeholder="ABC 1234"
+        oninput="vehicles[${i}].plate=this.value;update()">
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════
+// AUTO-CALCULATIONS
+// ═══════════════════════════════════════════════
+function calcTerm() {
+  const s = document.getElementById('leaseStart').value;
+  const e = document.getElementById('leaseEnd').value;
+  if (s && e) {
+    const [sy, sm, sd] = s.split('-').map(Number);
+    const [ey, em, ed] = e.split('-').map(Number);
+    // Count full months: e.g. Dec 1 → Nov 30 the following year = 12 months
+    // We add 1 day to end date to make inclusive-end ranges work correctly
+    const endAdj = new Date(ey, em - 1, ed + 1);
+    const months = (endAdj.getFullYear() - sy) * 12 + (endAdj.getMonth() - (sm - 1));
+    document.getElementById('leaseTerm').value = months > 0 ? months : '';
+  }
+  update();
+}
+
+function calcTotal() {
+  const rent = parseDollar(document.getElementById('monthlyRent').value);
+  const pet  = parseDollar(document.getElementById('petRent').value);
+  const total = rent + pet;
+  document.getElementById('totalMonthly').value = total > 0 ? fmt(total) : '';
+  update();
+}
+
+function parseDollar(s) {
+  return parseFloat((s || '').replace(/[$,]/g, '')) || 0;
+}
+function fmt(n) {
+  return '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+// ═══════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════
+function esc(s) { return (s||'').replace(/"/g,'&quot;'); }
+function fmtDate(d) {
+  if (!d) return null;
+  const [y,m,day] = d.split('-');
+  return `${m}/${day}/${y}`;
+}
+
+function val(id) { return document.getElementById(id).value.trim(); }
+
+function ph(v, label) {
+  if (v) return `<span class="filled">${v}</span>`;
+  return `<span class="placeholder">{{${label}}}</span>`;
+}
+
+function getTenantNames() {
+  const names = tenants.map(t => t.name).filter(Boolean);
+  return names.length ? names.join(', ') : null;
+}
+
+function getOccupantList() {
+  if (!tenants.some(t => t.name)) return null;
+  return tenants.filter(t => t.name).map(t => {
+    let line = `<strong>${t.name}</strong> — ${t.role}`;
+    if (t.phone) line += `<br><small style="color:#777;">${t.phone}</small>`;
+    if (t.email) line += `<small style="color:#777;"> · ${t.email}</small>`;
+    return `<div style="margin:6px 0 6px 12px;">${line}</div>`;
+  }).join('');
+}
+
+function getPetList() {
+  if (pets.length === 0) return null;
+  return pets.map(p => {
+    const parts = [p.name, p.breed, p.weight ? p.weight + ' lbs' : '', p.age ? p.age + ' yrs' : ''].filter(Boolean);
+    return parts.join(', ');
+  }).join('<br>');
+}
+
+function getVehicleList() {
+  if (vehicles.length === 0) return null;
+  return vehicles.map(v => {
+    const parts = [v.year, v.make, v.model, v.color, v.plate ? 'Lic# ' + v.plate : ''].filter(Boolean);
+    return parts.join(' ');
+  }).join('<br>');
+}
+
+function getSignatureBlocks() {
+  const resp = tenants.filter(t => t.role === 'Financially Responsible' && t.name);
+  if (!resp.length) return `<span class="placeholder">{{SIGNATURE_BLOCKS}}</span>`;
+  return resp.map(t => `
+    <div class="sig-block">
+      <div class="sig-line">
+        <div>
+          <div class="sig-field"></div>
+          <div class="sig-caption">Resident Signature — ${t.name}</div>
+        </div>
+        <div>
+          <div class="sig-date"></div>
+          <div class="sig-caption">Date</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:#777;font-family:'Instrument Sans',sans-serif;margin-top:2px;">
+        ${t.email ? t.email + ' · ' : ''}${t.phone || ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function initialsBlock() {
+  const resp = tenants.filter(t => t.role === 'Financially Responsible' && t.name);
+  if (!resp.length) {
+    return `<div class="initials-block"><div class="initials-line"></div><div class="initials-caption">Resident Initials &nbsp;&nbsp;&nbsp; Date: __________</div></div>`;
+  }
+  return resp.map(t => `
+    <div class="initials-block">
+      <div class="initials-line"></div>
+      <div class="initials-caption">${t.name} — Initials &nbsp;&nbsp;&nbsp; Date: __________</div>
+    </div>
+  `).join('');
+}
+
+function countIncomplete() {
+  const fields = [
+    val('ownerName'), val('addr1'), val('addr2'), val('agreementDate'),
+    val('leaseStart'), val('leaseEnd'), val('monthlyRent'), val('secDeposit'), val('appFee')
+  ];
+  const tenantMissing = tenants.filter(t => !t.name).length;
+  const missing = fields.filter(f => !f).length + tenantMissing;
+  return missing;
+}
+
+// ═══════════════════════════════════════════════
+// MAIN UPDATE — render preview
+// ═══════════════════════════════════════════════
+function update() {
+  const owner       = val('ownerName');
+  const addr1       = val('addr1');
+  const addr2       = val('addr2');
+  const agDate      = fmtDate(val('agreementDate'));
+  const leaseStart  = fmtDate(val('leaseStart'));
+  const leaseEnd    = fmtDate(val('leaseEnd'));
+  const leaseTerm   = val('leaseTerm');
+  const monthlyRent = val('monthlyRent');
+  const secDep      = val('secDeposit');
+  const petDep      = val('petDeposit');
+  const petRent     = val('petRent');
+  const totalMo     = val('totalMonthly');
+  const appFee      = val('appFee');
+  const rentIncDate = fmtDate(val('rentIncDate'));
+  const rentIncAmt  = val('rentIncAmt');
+  const tenantNames = getTenantNames();
+  const occupantList = getOccupantList();
+  const petListStr  = getPetList();
+  const vehicleStr  = getVehicleList();
+
+  const missing = countIncomplete();
+  const cntEl = document.getElementById('incompleteCount');
+  cntEl.textContent = missing > 0 ? `${missing} field${missing>1?'s':''} incomplete` : '✓ All fields complete';
+  cntEl.style.color = missing > 0 ? '#8b3a2a' : '#2a7a3a';
+
+  const doc = document.getElementById('previewDoc');
+
+  doc.innerHTML = `
+    <h1>RESIDENTIAL LEASE AGREEMENT</h1>
+    <h2>Washington State</h2>
+
+    <div class="doc-meta">
+      <strong>Agreement Date:</strong> ${ph(agDate,'AGREEMENT_DATE')}<br>
+      <strong>Property:</strong> ${ph(addr1,'PROPERTY_ADDRESS_1')}${addr1 && addr2 ? ', ' : ''}${ph(addr2,'PROPERTY_ADDRESS_2')}<br>
+      <strong>Owner:</strong> ${ph(owner,'OWNER_NAME')}<br>
+      <strong>Resident(s):</strong> ${ph(tenantNames,'TENANT_NAMES')}
+    </div>
+
+    <hr>
+    <h3>Section 1 — Lease Terms</h3>
+
+    <h4>1.1 Overview</h4>
+    <p>This Initial Agreement is made on ${ph(agDate,'AGREEMENT_DATE')} between Owner <strong>${ph(owner,'OWNER_NAME')}</strong> (hereinafter called "Owner") and <strong>${ph(tenantNames,'TENANT_NAMES')}</strong> (hereinafter called "Resident"), for rental Premises located at:</p>
+    <blockquote>${ph(addr1,'ADDRESS_LINE_1')}<br>${ph(addr2,'ADDRESS_LINE_2')}</blockquote>
+
+    <h4>1.2 Term</h4>
+    <p>The term of this Agreement shall be a Lease for a term of <strong>${ph(leaseTerm,'LEASE_TERM_MONTHS')} months</strong> beginning <strong>${ph(leaseStart,'LEASE_START_DATE')}</strong> and ending <strong>${ph(leaseEnd,'LEASE_END_DATE')}</strong>.</p>
+    <p>Upon expiration of this term, all Resident's rights to occupy the Premises shall cease without right to extend the term hereof. This Agreement shall not revert to a month-to-month tenancy following expiration of the term.</p>
+    <p><strong>Holdover Fee</strong> — In the event that the Resident remains in possession of the rental property beyond the initial term of the lease without executing a new lease or obtaining the Owner's consent, the Resident shall be held liable for an unauthorized month-to-month fee equivalent to 10% of the monthly rent as stated in the original lease agreement. This fee is in addition to the rent amount outlined in the lease agreement.</p>
+
+    <h4>1.3 Rent</h4>
+    <table class="preview-table">
+      <tr><th>Description</th><th>Amount</th></tr>
+      <tr><td>Monthly Rent</td><td>${ph(monthlyRent,'MONTHLY_RENT')}</td></tr>
+      <tr><td>Pet Rent</td><td>${ph(petRent,'PET_RENT')}</td></tr>
+      <tr><td><strong>Total Monthly Due</strong></td><td><strong>${ph(totalMo,'TOTAL_MONTHLY')}</strong></td></tr>
+    </table>
+    <p><strong>Prorated Rent</strong>, if any, shall apply to the second month of tenancy and shall be payable on the first day of the second month of tenancy.</p>
+    <p>The total amount of monthly rent due is considered "Rent" and is payable in advance by the first day of each and every month (the "Rent Due Date") to Owner, or any such other place that the Owner may from time to time designate.</p>
+    <p><strong>Application of Payments:</strong> Any rent unpaid by the due date is termed delinquent. Funds received from Resident shall be applied first to any past due rent prior to being applied to the current month's rent, then to late payment charges, to notice fees, to damages, to repairs, and finally to miscellaneous charges.</p>
+    <p><strong>Late Charge:</strong> Rent received more than five (5) days after the Rent Due Date shall result in a <strong>$50.00 late payment charge</strong> plus <strong>$20.00 each additional day</strong> thereafter that rent has not been paid in full. Late fees may differ if capped by the local jurisdiction.</p>
+    <p><strong>Returned Payment:</strong> Any payment which fails to clear the bank shall be treated as unpaid rent and shall be subject to the aforementioned late payment charge, plus a <strong>$45.00 returned payment fee</strong>. Should Resident submit a payment that is dishonored or returned, Resident shall make such payment by cashier's check, money order, or other payment method designated by Owner.</p>
+    <p><strong>Notice Fees:</strong> If for the reason of non-payment of rent, Owner shall give a statutory Notice to Pay or Vacate pursuant to RCW 59.12 et seq. or RCW 59.18 et seq., Resident agrees to pay the sum of <strong>$250.00</strong> for preparing and giving the notice.</p>
+    <p><strong>Non-Payment of First Rent Payment:</strong> If Resident has not paid all amounts then due by the lease starting date: (i) Resident has no right to possession or keys to the Premises and; (ii) this Lease is voidable at the option of Owner 2 calendar days after giving Resident a notice to pay.</p>
+
+    <h4>1.4 Deposit</h4>
+    <p>The Resident shall pay a Security Deposit in the total amount of <strong>${ph(secDep,'SECURITY_DEPOSIT')}</strong>, which has been paid in full. The deposit is for all purposes, including unpaid rent, damage, cleaning, late payment, utilities, keys, and other charges. The Resident's liability is not limited by the amount of the deposit.</p>
+    <p>Any refund will be by a single check payable to all individual Residents. Owner's itemized statement for retaining any of the deposit shall be sent to the Resident's forwarding address in accordance with RCW 59.18.280 after the termination of this Agreement, conditioned upon the following:</p>
+    <p>A. Resident shall have complied with all the conditions of this Agreement.</p>
+    <p>B. Resident shall professionally clean the Premises, professionally shampoo the carpet, and restore the Premises to its condition at the commencement of this tenancy as evidenced by the Property Condition Checklist, less wear and tear from normal usage. Resident agrees to hire professional cleaners and to provide the receipt of the cleaning by the move-out date. Resident agrees that soiling or staining is not wear and tear from normal usage.</p>
+    <p>C. Resident shall surrender all keys and remote control devices to Owner.</p>
+    <p>D. Resident shall bear the cost to replace or repair any missing or damaged property or fixtures provided by the Owner.</p>
+    <p>E. Labor and administrative costs for cleaning and repairing the Premises shall be at the rate of <strong>$65.00 per hour</strong>, excepting labor performed by parties other than Owner, which shall be assessed at its actual cost.</p>
+    <p>F. Resident's payment of any fees or charges imposed pursuant to this Agreement, including early termination charges.</p>
+
+    <h4>1.5 Non-Refundable Fees</h4>
+    <p>The Resident acknowledges and agrees that a non-refundable charge will be deducted from the security deposit for the specific purpose of covering N/A, in the amount of N/A.</p>
+
+    <h4>1.6 Prepayments</h4>
+    <p>Resident shall make a prepayment toward last month's rent of N/A. Resident may only apply this prepayment to the lawful last month of the tenancy.</p>
+
+    <h4>1.7 Applications and Screening Fees</h4>
+    <p>Application and/or screening fees paid prior to commencement of tenancy in the amount of <strong>${ph(appFee,'APPLICATION_FEE')} per applicant</strong> are non-refundable. Resident warrants the accuracy of all information contained on the Resident's rental application.</p>
+
+    <h4>1.8 Termination of Tenancies</h4>
+    <p>Resident understands and agrees that this tenancy shall terminate at <strong>4:00 PM</strong> on the last day of occupancy. It is Resident's obligation to have the Premises vacant and thoroughly clean by that hour.</p>
+    <p>Any notice of termination must provide for the vacation of the Premises by all occupants unless otherwise agreed to by Owner in writing. If Resident vacates the Premises prior to the expiration hereof or without notice, Resident shall be liable for additional rent as provided for in RCW 59.18.310.</p>
+
+    <h4>1.9 Utility Charges</h4>
+    <p>The Resident agrees to establish the use, maintain and/or pay for all utilities without delinquency used in or charged against the Premises during the term of this Agreement.</p>
+    <p><strong>Paid for by Resident directly to utility provider:</strong> All utilities including Electricity, Garbage, Sewer, Water, Natural Gas/Oil, Landscaping, and Internet.</p>
+    <p><strong>Utilities included in Rent:</strong> None.</p>
+    <p>Non-payment of utility charges may lead to an eviction proceeding. The Owner is entitled to use the Resident's security deposit to recover unpaid utility charges upon move-out. Utilities are considered as "Rent."</p>
+
+    <h4>1.10 Vehicles</h4>
+    <p>Resident is authorized to park the following vehicle(s) on the property. Unauthorized vehicles may be removed or towed at the vehicle owner's expense:</p>
+    <p>${vehicleStr ? `<strong>${vehicleStr}</strong>` : `<span class="placeholder">{{AUTHORIZED_VEHICLES}}</span>`}</p>
+    <p>Recreation vehicles, trailers, boats, and inoperable or unlicensed automobiles may not be parked or stored on the Property. No repair to any vehicles may be carried out on the property. All costs incurred for vehicle removal shall be payable by the Resident in addition to an administration fee of <strong>$100.00</strong>.</p>
+
+    <h4>1.11 Inspection / Re-Lease / Sale</h4>
+    <p>Owner may enter the Property to inspect it or make alterations or repairs at reasonable times and, except in emergencies, will give <strong>two (2) days' notice</strong> to the Resident. If Owner wishes to show the Property to prospective purchasers or Residents, <strong>one (1) day's notice</strong> of intent to enter shall be required. If access is denied after proper notice, the Resident will be fined <strong>$100.00</strong> for each violation per RCW 59.18.150. The Resident agrees to pay a fee of <strong>$50.00</strong> or vendor's charge (whichever is higher) for missing any scheduled appointment at the Property.</p>
+
+    <h4>1.12 Early Move-Out</h4>
+    <p>If Resident vacates the Premises prior to the expiration hereof or without notice as required in this lease, Resident shall be liable for additional rent as provided for in RCW 59.18.310. Resident will also be responsible for payment of a one-month rent re-letting fee and the payment of all utilities until the new Resident is moved in.</p>
+    <p><strong>Lease Buy-Out:</strong> If you desire to buy out your Lease Agreement early, please refer to Section 2 (Rental Agreement Buy-Out Agreement).</p>
+
+    <h4>1.13 Damage</h4>
+    <p>The Resident has inspected the Premises and acknowledges that they are in good condition at the commencement of this Agreement. Resident shall keep the Premises in a clean and orderly condition throughout the term of this Agreement and upon surrendering the Premises to Owner.</p>
+
+    <h4>1.14 Lockout Clause / Keys; Locks</h4>
+    <p>The Resident will be responsible for any costs associated with lost or stolen keys or access cards and remotes. The Resident may not re-key or remove any locks. If the Resident is locked out of the Premises, the Resident must contact a locksmith and pay for any charges. Owner does not provide locksmith services.</p>
+
+    <h4>1.15 Asbestos</h4>
+    <p>The Premises may contain asbestos and/or other substances known to cause cancer and/or birth defects and other reproductive harm. Resident, Occupants, and their guests must not take or permit any action which in any way damages or disturbs the ceiling in the Premises or any part thereof, including without limitation: (a) piercing the surface of the ceiling; (b) hanging plants, mobiles, or other objects from the ceiling; (c) attaching any fixtures to the ceiling; (d) allowing any objects to come into contact with the ceiling; (e) permitting water or any liquid to come into contact with the ceiling; (f) painting, cleaning or undertaking any repairs of any portion of the ceiling; (g) replacing light fixtures; (h) undertaking any activity which results in building vibration which may cause damage to the ceiling; or (i) altering or disturbing the heating and ventilation system serving the Premises.</p>
+
+    <h4>1.16 Fire and Safety</h4>
+    <p>The Resident agrees to prevent the risk of fire and fire-related injuries. This includes: (a) No combustible fluids, fireworks, or other hazardous materials; (b) Maintain smoke and CO detectors, replacing batteries every six (6) months; (c) Report detector problems to the Owner immediately; (d) Use UL-labeled electrical appliances; (e) Unplug small appliances when not in use; (f) Do not use items with cracked or frayed cords; (g) Use surge-protected power adaptors; (h) Keep baseboard heaters clear by twelve (12) inches; (i) Place portable heaters at least three (3) feet from flammable materials; (j) Never leave cooking unattended; (k) Develop household emergency escape plans; (l) Ensure all household members can dial 911.</p>
+
+    <h4>1.17 Smoke Detection Devices / Fire Safety</h4>
+    <p>All rooms, hallways, and living spaces are equipped with smoke detection devices as required by law. It is the responsibility of Resident to maintain all smoke detection devices, including replacement of any batteries. Resident shall not tamper with or disable any smoke detection devices. Failure to comply may result in a fine of up to <strong>$200.00</strong> in accordance with RCW 43.44.110 / WAC 212.10.050. Resident agrees to test the smoke detector monthly and report any malfunctions to the Owner in writing.</p>
+
+    <h4>1.18 Carbon Monoxide Detection Devices</h4>
+    <p>In accordance with RCW 19.27.530, a minimum of one carbon monoxide detector is provided. The Resident shall not tamper with, remove batteries, or otherwise disable or relocate any carbon monoxide detection devices. The Resident also agrees to test the carbon monoxide detector monthly and report any malfunctions to the Owner in writing.</p>
+
+    <h4>1.19 Use / Assignments or Sub-Letting</h4>
+    <p>Resident shall not use the Premises for any business purpose, including but not limited to garage/yard sales, private lessons/tutoring, AirBnB, and VRBO. Resident shall not assign this Agreement, sub-let the Premises, or permit the Premises to be used for any purpose other than as the primary full-time residence for the following named persons:</p>
+    <div style="margin:8px 0 8px 16px;">
+      ${occupantList || `<span class="placeholder">{{TENANT_OCCUPANT_LIST}}</span>`}
+    </div>
+    <p>Changes in occupancy are not permitted without the prior written approval of the Owner. A non-refundable administrative fee of <strong>$250.00</strong> shall be charged for any request to add or remove a Resident from the lease agreement.</p>
+
+    <h4>1.20 Delivery of Premises</h4>
+    <p>If for any reason whatsoever Owner does not deliver possession of the Premises on the commencement of the term of this Agreement, rent shall be prorated until such time as Owner tenders possession. If possession of the Premises is not tendered within 5 days of the commencement of the term, Resident may terminate this Agreement by giving written notice to Owner, and any monies paid by Resident to Owner shall be refunded.</p>
+
+    <h4>1.21 Freezing</h4>
+    <p>The Resident shall leave the heat on low during cold weather and shall turn off the water to outside faucets wherever possible. The Resident shall install faucet covers on all outside faucets during cold weather.</p>
+
+    <h4>1.22 Ventilation</h4>
+    <p>Resident shall adequately ventilate the Property to prevent high humidity, which can result in condensation, mold, and mildew growth. The Resident is responsible to clean mold or mildew and/or pay for any damage resulting from inadequate ventilation.</p>
+
+    <h4>1.23 Garbage</h4>
+    <p>Resident shall contract for refuse collection services, furnish their own garbage can, and place it where required for pickup. Resident shall properly dispose of all rubbish and garbage in a clean and sanitary manner at reasonable and regular intervals and assume all costs for extermination caused by Resident's neglect.</p>
+
+    <h4>1.24 Nails / Painting</h4>
+    <p>Resident shall not drive any nails or screws into walls, and shall not paint any part of the Property, without the prior written consent of the Owner. Any holes must be filled using spackle, followed by full wall painting by a professional painting company to ensure a proper match.</p>
+
+    <h4>1.25 Pets and Animals</h4>
+    <p>Unless otherwise provided under federal, state, or local law, no animals (including mammals, reptiles, birds, fish, rodents, and insects) are allowed, even temporarily, anywhere on the premises unless we've so authorized in writing. You must remove an illegal or unauthorized animal within 24 hours of notice from us, or you will be considered in default of this Lease Agreement. If we allow an animal as a pet, you must execute a separate animal addendum which may require additional deposits, rents, fees or other charges. An animal deposit is considered a general security deposit.</p>
+    <p>We will authorize an assistance animal for a disabled person. When allowed by applicable laws, before we authorize an assistance animal, if the disability is not readily apparent, we may require a written statement from a qualified professional verifying the disability-related need for the assistance animal. Animal deposits, additional rents, fees or other charges will not be required for an assistance animal needed due to disability, including an emotional support or service animal, as authorized under federal, state, or local law.</p>
+    <p>You must not feed stray or wild animals. No pets will be allowed to visit the property and no "pet-sitting" shall be allowed. If a pet becomes a problem in our sole opinion, we reserve the right to require that the pet be removed from the property. Once a pet has been removed from the property, the pet deposit for that pet shall not be returned during the tenancy even though the animal is no longer on the property. If you have pets, assistance or service animals, they must be secured during maintenance work. If they are not secured and pose any type of danger to Maintenance, in our sole opinion, Maintenance shall be entitled to leave the unit prior to the completion of the work and it shall be your sole responsibility to schedule a return by Maintenance for the completion of the work after the animal has been secured.</p>
+    <p>If you or any guest or occupant violates animal restrictions (with or without your knowledge), you'll be subject to charges, damages, eviction, and other remedies provided in this Lease Agreement. If an animal has been on the premises at any time during your term of occupancy (with or without our consent), Resident assumes all costs of restoring Premises as a result of any pet or animal on the Premises, including but not limited to costs to de-flea, fumigate, clean or replace floor coverings, yard restoration, and cost to analyze floors for the presence of animal urine/waste or pest infestation should analysis disclose the presence of such damage. These policies include "guest pets." No pets are to be added or substituted without the Owner's written permission. Initial and daily animal-violation charges and animal-removal charges are liquidated damages for our time, inconvenience, and overhead (except for attorney's fees and litigation costs) in enforcing animal restrictions and rules. We may kennel the animal or contact a humane society or local authority for pickup. When kenneling an animal, we won't be liable for loss, harm, sickness, or death of the animal unless due to our negligence. We'll return the animal to you upon request if it has not already been turned over to a humane society or local authority. You must pay for the animal's reasonable care and kenneling charges. We have no lien on the animal for any purpose.</p>
+
+    <h4>1.26 Attorneys' Fees / Venue and Jurisdiction</h4>
+    <p>As provided by law and except as otherwise prohibited, the prevailing party shall be entitled to recover its reasonable attorney's fees and court costs. This Agreement shall be governed by and construed in accordance with the laws of the State of Washington. Venue for any legal action shall be in the District or Superior Court with jurisdiction over the area in which the Premises are located.</p>
+
+    <h4>1.27 Non-Waiver of Breach and Severability</h4>
+    <p>The failure of Owner to insist upon the strict performance of any term of this Agreement shall not be construed to be a waiver or relinquishment of any such term or Agreement. If any clause or provision of this Agreement is illegal, invalid, or unenforceable under present or future laws effective during the term hereof, the remainder of the Agreement shall not be affected thereby, and the parties intend that a valid and enforceable clause as similar as possible shall be substituted in its place.</p>
+
+    <h4>1.28 Water Heater</h4>
+    <p>Pursuant to RCW 19.27A.060, the temperature control in a domestic hot-water heater within a rental dwelling must be set no higher than <strong>120 degrees Fahrenheit</strong>. The Resident acknowledges that the hot-water heater has been inspected and to the best of the Resident's knowledge is not set higher than 120 degrees Fahrenheit.</p>
+
+    <h4>1.29 Lead Warning Statement</h4>
+    <p>Housing built before 1978 may contain lead-based paint. Lead-based paint, paint chips, and dust can pose health hazards if not managed properly. Lead exposure is especially harmful to young children and pregnant women.</p>
+
+    <h4>1.30 Rental Premises, Storage, and Parking</h4>
+    <p>The Resident recognizes that his/her storage of any personal property or vehicles on the Premises is at his/her own risk. The Owner and agent are not liable for claims for damages arising out of the loss or damage to goods in storage for whatever reason outside of the Owner's control.</p>
+
+    <h4>1.31 Actions by Third Parties / Personal Protection</h4>
+    <p>Owner disclaims any warranties or representation that it will be liable to Resident for any damages or losses to person or property caused by other persons. Resident understands that personal safety and security are Resident's own personal responsibility. Harassment or intimidation of a Resident, guest, Owner, or Owner's agent is prohibited. Resident is responsible for all damage caused to the Premises as a result of the negligence of Resident, their guests and invitees, including but not limited to fire and glass breakage.</p>
+
+    <h4>1.32 Attractive Nuisances</h4>
+    <p>Residents agree to not use, install, allow, or support any attractive features including but not limited to trampolines, skate ramps, and pools, on the Premises or surrounding property areas due to potential injury.</p>
+
+    <h4>1.33 Renters Insurance — Required</h4>
+    <p>Renters liability insurance is required. A minimum of <strong>$100,000</strong> of liability coverage must be obtained. Resident is required to provide proof of current renters insurance policy on the day of move-in, again at lease renewal, and/or when asked by the Owner. All individuals residing in the rental property must be named on the rental insurance policy.</p>
+
+    <h4>1.34 Liens and Sales</h4>
+    <p>This Lease is subject and subordinate to any mortgage or deed of trust which is now or hereafter a lien upon the Property or the Premises. Resident shall execute and deliver, within 10 days after demand, whatever instruments may be required from time to time by any mortgagee or deed of trust beneficiary.</p>
+    <p><strong>Termination Upon Sale:</strong> Pursuant to RCW 59.18.650(2)(e), Owner may terminate this tenancy if Owner has entered into a bona fide agreement to sell the Premises and the buyer or a member of the buyer's immediate family intends to occupy the Premises as their primary residence. In such event, Owner shall provide Resident with at least <strong>ninety (90) days' written notice</strong> prior to the termination date. Owner shall not be obligated to pay relocation assistance if the Premises is a single-family residence as defined under applicable Washington State law. If the sale does not close within 90 days after the Resident vacates, Owner shall either offer the Resident the opportunity to reinstate the tenancy or pay the Resident the equivalent of one (1) month's rent as compensation, as required by RCW 59.18.650. Resident acknowledges that this clause does not waive any rights afforded to Resident under Washington State law that cannot be waived by contract.</p>
+
+    <h4>1.35 General Terms</h4>
+    <p>No oral agreements have been entered into with respect to this Agreement. This Agreement shall not be modified except by an instrument in writing signed by the Resident and Owner. In the event of more than one Resident, each Resident is jointly and severally liable for each provision of this Agreement. Time is of the essence of this Agreement.</p>
+
+    <h4>1.35A Rent Payment — Online Portal</h4>
+    <ol>
+      <li><strong>Required Payment Method:</strong> All rent and other charges due under this Agreement must be paid through the Owner's designated online rental payment portal. The portal currently in use is <strong>apartments.com</strong>, though Owner reserves the right to designate a different portal upon written notice to Resident.</li>
+      <li><strong>Auto-Pay Required:</strong> Resident is required to enroll in automatic payments through the portal. It is Resident's sole responsibility to ensure that the auto-pay amount is correct and current at all times, including in the event of any rent increase.</li>
+      <li><strong>Accepted Payment Methods:</strong> eCheck (ACH) is accepted. Personal checks and money orders are not accepted. Debit and credit card payments may be accepted through the portal subject to any fees imposed by the portal provider, which are the sole responsibility of Resident.</li>
+      <li><strong>Failed Payments:</strong> Any payment that does not clear for any reason shall be treated as unpaid rent and subject to the returned payment fee described in Section 1.3. Resident's submission of a payment and receipt of a confirmation number does not constitute confirmation that the payment has cleared.</li>
+      <li><strong>Cancellation of Auto-Pay:</strong> If Resident sets up automatic payments, those payments will continue until Resident cancels them. Owner cannot reverse, cancel, or modify payments on Resident's behalf. If a payment is made in error, Owner will issue a refund by check to Resident once the payment has fully cleared.</li>
+      <li><strong>Owner Access:</strong> Owner does not have access to Resident's portal account and does not control or withdraw funds from Resident's account. All payments made through the portal are made by Resident's express authorization.</li>
+    </ol>
+
+    <h4>1.36 Resident's Obligations — Part A (General)</h4>
+    <ol>
+      <li>To pay all rent and other charges, including utilities and installment payments of last month's rent and security deposit, promptly when due or assessed, for which Resident is responsible and to provide proof of payment.</li>
+      <li>To execute all revised rental agreements upon request upon 30 days' notice before a new rental period; except for rent increases which require 60 days' notice.</li>
+      <li>To notify and deliver to Owner any legal notice received from any person or governmental agency which relates to the Premises. Fines assessed to Owner by any governmental agency resulting from a Resident's negligent behavior, including but not limited to, a failure to observe burn bans, Resident's maintenance of a nuisance shall be the responsibility of the Resident to pay.</li>
+      <li>Provide the Owner with emergency contact information within ten (10) days of commencement of tenancy and to provide updated or new information whenever such information is available.</li>
+      <li>Not to do or keep anything in or about the Premises that will increase the present insurance rate thereon. Resident agrees to reimburse Owner for any increase that might occur for violation of this rule.</li>
+      <li>Resident shall maintain liability insurance and licenses upon all motor vehicles brought onto the Premises and shall provide Owner proof upon request.</li>
+      <li>If the Premises should fail an inspection required by local jurisdiction due to the Resident(s), any fines or costs associated with reinspection shall be the responsibility of the Resident.</li>
+      <li>To permit Owner to display "for rent" or "for sale" signs at any time during a tenancy.</li>
+      <li>Not to permit any person to occupy the Premises other than authorized occupants or guests as defined in Section 1.19.</li>
+      <li>Except in cases of emergency where no notice is required, to permit Owner, his or her agents, employees, or representatives to enter the Premises at reasonable times after notice is given in accordance with RCW 59.18.150(6). The parties agree that no notice is required to enter areas of the Premises generally accessible to the public, such as walkways and driveways.</li>
+      <li>Owner is not obligated to provide window or door screens. If any are presently installed, the Owner has no obligation to maintain or replace them.</li>
+    </ol>
+
+    <h4>1.37 Resident's Obligations — Part B (Conduct, Behavior and Safety)</h4>
+    <ol>
+      <li>Resident is responsible for their own proper conduct and that of all guests.</li>
+      <li>To comply with all laws and ordinances; to refrain from use of the Premises for prostitution, drug manufacture/use/possession/sale, any felony or misdemeanor, or any other illegal use. Residents agree not to abuse any drugs or alcohol in a manner that will disturb the peace or endanger the health, safety, or well-being of any resident, family member, guest, or invitee.</li>
+      <li>Resident shall not keep or maintain an attractive nuisance on the Premises as described in Section 1.32.</li>
+      <li>Resident is to follow all bans/laws, including but not limited to burn bans.</li>
+      <li>No smoking of any substance is allowed in or on the Premises.</li>
+      <li>To comply with any trespass admonishments issued by Owner.</li>
+      <li>Resident shall not make or allow any disturbing noises which will interfere with the rights, comforts, or conveniences of others.</li>
+      <li>Keys for Premises should not be copied nor given to anyone other than those listed as lease or occupant without the Owner's prior written consent.</li>
+      <li>Resident must report any water leakage, fire hazard, or safety hazard immediately to the Owner.</li>
+    </ol>
+
+    <h4>1.38 Resident's Obligations — Part C (Maintenance, Repairs and Alterations)</h4>
+    <ol>
+      <li>Resident's dirt, destruction, damage of any nature, neglect, or disrepair to carpet does not constitute normal wear and tear. Carpets must be shampooed by Resident upon vacancy. Resident shall obtain area rugs or other coverings to protect hardwood floors.</li>
+      <li>Resident agrees to provide written notice to Owner regarding any habitability issues and to give Owner the opportunity to cure the defective condition prior to exercising any other option granted to the Resident under law.</li>
+      <li>Resident shall reimburse Owner promptly in the amount of the loss, property damage, or cost of repairs or service, including plumbing trouble caused by negligence or improper use by Resident, their invitees, family, or guests.</li>
+      <li>Resident understands and agrees that any damage caused by or related to smoking of any substance or use of candles, incense, oil lamps, or burning of any other product (except for proper use of Owner-installed fireplaces), shall not constitute wear resulting from ordinary use of the Premises.</li>
+      <li>Residents shall be responsible for any damage resulting from windows or doors left open or unlocked.</li>
+      <li>To protect against freezing of water pipes and waste pipes and stoppage of same in and about the Premises.</li>
+      <li>Not to intentionally or negligently destroy, deface, damage, change, repair, or remove any part of the structure or dwelling, including the facilities, equipment, furniture, floor or window coverings, furnishings, locks, and appliances.</li>
+      <li>Not to make any alterations, additions, painting, or improvements to the Premises, nor to change or add additional locks, nor change or add telephone, network, or cable TV jacks, without the prior written approval of Owner.</li>
+      <li>Prior to the installation of a satellite dish, the Resident must first give notice to the Owner. Installation must be performed by a licensed professional.</li>
+      <li>Resident shall not disconnect or relocate within the dwelling any Owner-supplied appliance without Owner's written consent.</li>
+      <li>Not to install a waterbed or aquarium without the prior written approval of Owner.</li>
+      <li>In the event that the Resident requests testing and/or service calls which prove to be unsubstantiated, or the condition is caused by the Resident, the Resident must pay for all actual service call charges.</li>
+      <li>To inspect and maintain in compliance with the information tag thereon all Owner in-unit supplied fire extinguishers.</li>
+      <li>Owner is not obligated to provide window or door screens.</li>
+      <li>Residents are responsible for light bulbs, garbage disposer, batteries in devices, any water filter, or air filters.</li>
+      <li>The Resident is obligated to immediately inform the Owner of any work orders or damages that have occurred within the rental unit.</li>
+    </ol>
+
+    <h4>1.39 Resident's Obligations — Part D (Appearance, Cleanliness and Trash)</h4>
+    <ol>
+      <li>To take all reasonable precautions to prevent the presence of bed bugs.</li>
+      <li>To take all reasonable precautions to prevent the presence of mold or mildew in the Premises as per attached Mold Handout, such steps to include, generally, using exhaust fans where available in humid locations, removing condensation from windows and other surfaces, providing adequate ventilation to the Premises at all times, storing possessions and furniture so as to provide for air circulation, etc. Resident agrees to promptly notify Owner of the presence of mold or mildew.</li>
+      <li>The Premises must be kept clean, sanitary and free from objectionable odors. To properly dispose of all rubbish, garbage, and other waste at reasonable and regular intervals and to follow all recycling procedures. To assume all costs of extermination and fumigation for infestation caused by Resident.</li>
+      <li>Resident agrees not to store any hazardous material including but not limited to unreasonable amounts of flammable materials, asbestos, petroleum and petroleum by-products, old batteries, or paint on the Premises.</li>
+      <li>Except as otherwise permitted by law, to display no signs or placards on or about the Premises that are visible to the public.</li>
+      <li>To maintain the plantings and lawn and to keep the grass, lawn, flowers, planting beds, trees and shrubs in good condition and repair by watering, fertilizing and otherwise maintaining those elements in good health and in an appearance consistent with the character of the surrounding neighborhood and in consideration of landscaping condition as noted in the property condition report. Owner reserves the right to have professional gardeners maintain the yard at Resident's expense should Resident fail to comply with the preceding sentence. To keep the sidewalks or paths surrounding the premises free and clear of all obstructions, snow and ice.</li>
+      <li>To provide and maintain receptacles for garbage and trash, and to contract for collection of the same. The premises must be kept clean, sanitary and free from objectionable odors. To properly dispose of all rubbish, garbage, and other waste at reasonable and regular intervals and to follow all recycling procedures. Resident is responsible for all costs of extermination and fumigation for infestation caused by Resident.</li>
+    </ol>
+
+    <h4>1.40 Maintenance Use and Reporting</h4>
+    <p>The Resident acknowledges and agrees that the Owner retains the right to decline servicing or repairs of the following amenities: Refrigerator Water Dispenser, Refrigerator Ice Maker, Hot Tub, Jacuzzi Bathtubs, Fireplace.</p>
+    <p>The Resident(s) are responsible for the following at their own expense: (a) Surrendering the Premises in as good a condition as it was received; (b) Reporting any pest infestation within fourteen (14) days of the occupancy date; (c) Clearing any blockages in the drain and sewer system not caused by broken lines or tree roots; (d) Repairing and unblocking all garbage disposals; (e) Replacing any broken or cracked interior or exterior glass or window/door screens; (f) Replacing all furnace filters at least once every quarter; (g) Maintaining the landscaping in a sanitary and good condition; (h) Relighting of furnaces, gas fireplaces, and hot water heaters.</p>
+
+    <h4>1.41 Damage or Destruction of Premises / Property</h4>
+    <p>In the event of damage to the Premises or Property by fire, water, or other hazards, Owner shall make such repairs as needed with reasonable promptness, and rent shall <strong>not</strong> abate during the period of such repairs. Under no circumstances shall rent abate if damages are caused by the Resident. In the event that the Premises are so damaged or destroyed as to be, in the sole opinion of Owner, incapable of being satisfactorily repaired within a reasonable period of time, then this Agreement shall terminate effective as of the date of the damage or destruction.</p>
+
+    <h4>1.42 Hold Harmless</h4>
+    <p>Resident agrees to protect and save Owner harmless from and against all claims, demands, and causes of action of any kind or character, including the cost of the defense thereof, arising in favor of Resident's employees or third parties on account of personal injuries, death, or damage to property arising from the willful or negligent acts or omissions of the Resident and/or their agents, guests, invitees, employees, or representatives.</p>
+
+    <h4>1.43 Misstatements on Application</h4>
+    <p>Resident warrants that all statements in the Resident's rental application are true and accurate as of the date hereof. If any information provided by Resident in the rental application is false, incorrect, or misleading, then Resident shall be deemed to have committed a material breach of this Lease that the Resident will not be given the opportunity to cure, and Resident will be subject to eviction, damages, and other remedies as provided in this Lease and under applicable state law.</p>
+
+    <h4>1.44 Neighborhood Conditions</h4>
+    <p>Resident accepts responsibility to ensure his or her satisfaction with the neighborhood or area conditions, including but not limited to: schools; proximity and adequacy of law enforcement; crime statistics; proximity of registered felons or offenders; fire department response time; adequacy and cost of telecommunications services; existing or proposed transportation, construction, and development; airport noise; wild and domestic animals; and other nuisances, hazards, or circumstances.</p>
+
+    <h4>1.45 Indemnification</h4>
+    <p>To the extent allowed by law, Owner will not be liable for any damage or injury to Resident or any other person, or to any property, occurring on the Premises or in common areas, unless the damage is the proximate result of the gross negligence or willful misconduct of Owner. Resident agrees to indemnify, defend, protect, and hold harmless Owner, its agents, and any management company for, from, and against any liability, costs (including reasonable attorney's fees), or claims for personal injuries or property damage caused by the negligent, willful, or intentional act or omission of Resident or Resident's occupants, guests, visitors, or invitees.</p>
+
+    <h4>1.46 Resident's Obligations Upon Vacating Home</h4>
+    <p>At the termination of the tenancy, it is the Resident's responsibility to leave the property in good, clean, move-in condition. This includes:</p>
+    <ol type="i">
+      <li>Give Owner all copies of all keys including mailbox and any opening devices (garage door) to the Home.</li>
+      <li>Vacate and surrender Home, parking, and storage spaces to Owner, empty of all persons and personal property.</li>
+      <li>Clean and provide receipts, as specified in Section 1.4.</li>
+      <li>All alterations/improvements made by or caused to be made by Resident, with or without the Owner's consent, become the property of the Owner upon the termination of this Lease.</li>
+      <li>Give written notice to Owner of Resident's forwarding address.</li>
+      <li><strong>Cleaning Expectations:</strong> Remove all belongings and any trash, spot wash walls, wash windows, sills &amp; tracks, wash curtain rods and blinds, wash light fixtures and replace burned out bulbs, wash all closet shelves and cabinets, vacuum and professionally clean carpets and treat for any stains by a carpet cleaning professional (rental of a carpet cleaner machine will not satisfy this obligation) and provide a receipt upon request; clean floors, clean patios and decks, repair any damages, mow/edge/rake lawns, clean garage and storage areas, clean all appliances, wash tubs, toilets, showers, etc., and clean grouted areas.</li>
+    </ol>
+    <p>Resident acknowledges that carpet stains, water stains, and high heel or hard-soled shoe marks on hardwood floors are not considered normal wear and tear. Resident agrees to pay an administrative fee of <strong>$25.00</strong> for each bill or service charged on Resident's damage, cleaning, and security deposit accounting. There will also be a <strong>$65.00</strong> fee for re-inspections of vendor work or trips to let vendors into the Property. The Resident agrees to pay a meter reading fee of <strong>$35.00</strong> in the event that the Owner is required to read any utility meters in order to close out the Resident's account.</p>
+
+    <h4>1.47 Rental Property Specific</h4>
+    <p>Every Resident who has signed this Agreement has personally viewed the property and accepts it in its current condition, without any representations or warranties as to its condition or potential for improvement. Resident(s) has confirmed and is satisfied with all aspects of the property.</p>
+    <p>The rent will increase by <strong>${ph(rentIncAmt,'RENT_INCREASE_AMOUNT')}</strong> starting <strong>${ph(rentIncDate,'RENT_INCREASE_DATE')}</strong>.</p>
+
+    <h4>1.48 Law of Real Estate Agency</h4>
+    <p>The Agent involved in this Agreement is an Owner's Agent unless otherwise stated herein.</p>
+
+    <h4>1.49 Summary of Funds Received and Due</h4>
+    <table class="preview-table">
+      <tr><th>Description</th><th>Amount</th></tr>
+      <tr><td>Monthly Rent</td><td>${ph(monthlyRent,'MONTHLY_RENT')}</td></tr>
+      <tr><td>Refundable Pet Deposit</td><td>${ph(petDep,'PET_DEPOSIT')}</td></tr>
+      <tr><td>Pet Rent</td><td>${ph(petRent,'PET_RENT')}</td></tr>
+      <tr><td>Security Deposit</td><td>${ph(secDep,'SECURITY_DEPOSIT')}</td></tr>
+    </table>
+
+    <h4>1.50 Additional Documents Required to be Attached</h4>
+    <ul>
+      <li>Property Condition Report</li>
+      <li>Mold Handout (Required in all Washington State residential rentals)</li>
+      <li>Lead-Based Paint Pamphlet (Required for pre-1978 Properties)</li>
+      <li>Lead-Based Paint Disclosure Addendum (Required for pre-1978 Properties)</li>
+      <li>Local Law Disclosure Addendum (Required in some jurisdictions)</li>
+    </ul>
+
+    ${initialsBlock()}
+
+    <hr>
+    <h3>Section 2 — Rental Agreement Buy-Out Agreement</h3>
+
+    <table class="preview-table">
+      <tr><td><strong>Owner's Name</strong></td><td>${ph(owner,'OWNER_NAME')}</td></tr>
+      <tr><td><strong>Residents' Names</strong></td><td>${ph(tenantNames,'TENANT_NAMES')}</td></tr>
+      <tr><td><strong>Property Address</strong></td><td>${ph(addr1,'ADDRESS_1')}${addr1&&addr2?', ':''}${ph(addr2,'ADDRESS_2')}</td></tr>
+      <tr><td><strong>Lease Start Date</strong></td><td>${ph(leaseStart,'LEASE_START_DATE')}</td></tr>
+      <tr><td><strong>Lease End Date</strong></td><td>${ph(leaseEnd,'LEASE_END_DATE')}</td></tr>
+      <tr><td><strong>Lease Term</strong></td><td>${ph(leaseTerm,'LEASE_TERM_MONTHS')} months</td></tr>
+    </table>
+
+    <h4>2.2 Purpose</h4>
+    <p>The purpose of this Buy-Out Agreement is to give you the right to buy out of your Rental Agreement early. In order to buy out early, your notice must be signed by all Residents listed in the rental agreement, and you must comply with all provisions of this Buy-Out Agreement.</p>
+
+    <h4>2.3 Buy-Out Procedures</h4>
+    <p>You may buy out of the rental agreement prior to the end of the lease term if all of the following occur:</p>
+    <ul>
+      <li>You give written notice of buy-out at least <strong>30 days</strong> prior to the new termination date;</li>
+      <li>You specify the new termination date in the notice;</li>
+      <li>You are not in default under the rental agreement on the date you give notice of buy-out;</li>
+      <li>You are not in default under the rental agreement on the new termination date;</li>
+      <li>You move out on or before the new termination date and do not hold over;</li>
+      <li>You pay a buy-out fee of <strong>2.5 times (250%) the current rent</strong>;</li>
+      <li>You are current in the payment of rent and all other amounts owing through the termination date.</li>
+    </ul>
+
+    <h4>2.4 When Payable</h4>
+    <p>The buy-out fee is due and payable no later than <strong>ten (10) days</strong> after you give notice to vacate.</p>
+
+    <h4>2.5 Compliance Essential</h4>
+    <p>If you fail to comply with any of the procedures or requirements in this Agreement after Owner deposits such monies, your buy-out right and this agreement will be voided automatically; and (1) any amounts you have paid under this agreement will become part of your security deposit or last month's rent, and (2) the lease will continue without buy-out.</p>
+
+    ${initialsBlock()}
+
+    <hr>
+    <h3>Section 3 — Pest and Bed Bug Addendum</h3>
+
+    <h4>3.1 General Information</h4>
+    <table class="preview-table">
+      <tr><td><strong>Owner's Name</strong></td><td>${ph(owner,'OWNER_NAME')}</td></tr>
+      <tr><td><strong>Residents' Names</strong></td><td>${ph(tenantNames,'TENANT_NAMES')}</td></tr>
+      <tr><td><strong>Property Address</strong></td><td>${ph(addr1,'ADDRESS_1')}${addr1&&addr2?', ':''}${ph(addr2,'ADDRESS_2')}</td></tr>
+    </table>
+
+    <h4>3.2 Prevention and Treatment</h4>
+    <p>Resident(s) declare that all furnishings and other personal items being brought into the unit are free from bed bugs.</p>
+
+    <h4>3.3 Resident Responsibility</h4>
+    <ol>
+      <li><strong>Good Housekeeping:</strong> Resident shall not use or bring second-hand furnishings which have not first been inspected for the presence of bed bugs. The Resident shall cover all mattresses and box springs with impermeable covers. The Resident shall check for bed bugs within their personal belongings prior to re-entering the rental unit when returning from stays outside the unit.</li>
+      <li><strong>Reporting:</strong> Report any suspected bed bug infestations immediately. Report any maintenance needs immediately to minimize the possibility of harboring bed bugs within cracks or holes.</li>
+      <li><strong>Cooperation:</strong> Allow access to pest control company when proper notice is given. Seal all items prior to removal from the unit. Remove all bedding, drapes, curtains, and non-fixed rugs. Vacuum all floor areas, furniture, mattresses, and box springs. Wash all machine-washable items and dry in a high-heat setting.</li>
+      <li>Resident agrees to reimburse the Owner for all treatment costs if it is determined that a bed bug infestation began within the Resident's unit.</li>
+      <li>Failure to comply with the terms of this Addendum shall constitute a material breach of the Lease and may subject the Resident to court action, including unlawful detainer/eviction proceedings.</li>
+    </ol>
+
+    <h4>3.4 Pest Inspection and Control</h4>
+    <p>Upon move-in, Resident shall conduct a thorough inspection of the Property for pests. If Resident fails to report ANY pest infestation within <strong>ten (10) days</strong>, it shall be an acknowledgment that the Property is in an acceptable and pest-free condition. Resident agrees to pay for any treatments in excess of the first treatment.</p>
+
+    ${initialsBlock()}
+
+    <hr>
+    <h3>Section 4 — Crime Free Addendum</h3>
+
+    <table class="preview-table">
+      <tr><td><strong>Owner's Name</strong></td><td>${ph(owner,'OWNER_NAME')}</td></tr>
+      <tr><td><strong>Residents' Names</strong></td><td>${ph(tenantNames,'TENANT_NAMES')}</td></tr>
+      <tr><td><strong>Property Address</strong></td><td>${ph(addr1,'ADDRESS_1')}${addr1&&addr2?', ':''}${ph(addr2,'ADDRESS_2')}</td></tr>
+    </table>
+
+    <ol>
+      <li><strong>Illegal Drugs:</strong> Resident agrees to keep the Premises "drug-free" at all times. Illegal drugs will not be used, stored, manufactured, or kept on the Premises by the Resident, any family member, or any guest.</li>
+      <li><strong>Substance Abuse:</strong> Resident agrees that Resident, any family member, and any guest or invitee shall not use controlled substances in a manner that will disturb the peace and quiet enjoyment of other Residents or neighbors, or endanger the health, safety, or well-being of any person.</li>
+      <li><strong>Illegal Gang Activity:</strong> Resident agrees that Resident, any family member, or any guest or invitee shall not be a member of an illegal gang, nor engage in any gang-related activity on the Premises.</li>
+      <li><strong>Graffiti:</strong> Resident agrees that Resident, any family member, or any guest or invitee shall not deface any property on property grounds.</li>
+      <li><strong>Criminal Activity:</strong> Resident, any family member, or any guest or invitee shall not engage in criminal activity, including prostitution, threats, intimidation, possession of dangerous weapons, unlawful discharge of firearms, or any breach of the lease agreement that jeopardizes the health, safety, and welfare of the Owner or other Residents.</li>
+      <li><strong>Domestic Violence:</strong> Any incident meeting the definition of domestic violence causing physical harm will result in Termination of Tenancy of the perpetrator according to RCW 59.18.575.</li>
+    </ol>
+    <p>Resident(s) agrees that violation of any of the above terms constitutes a nuisance and is grounds for eviction and/or other legal action by the Owner.</p>
+
+    ${initialsBlock()}
+
+    <hr>
+    <h3>Section 5 — Smoke Free Addendum</h3>
+
+    <table class="preview-table">
+      <tr><td><strong>Owner's Name</strong></td><td>${ph(owner,'OWNER_NAME')}</td></tr>
+      <tr><td><strong>Residents' Names</strong></td><td>${ph(tenantNames,'TENANT_NAMES')}</td></tr>
+      <tr><td><strong>Property Address</strong></td><td>${ph(addr1,'ADDRESS_1')}${addr1&&addr2?', ':''}${ph(addr2,'ADDRESS_2')}</td></tr>
+    </table>
+
+    <p>The rental property at the above address has been designated as a <strong>"Smoke-Free Residence"</strong> requiring all Residents/Occupants, guests, and invitees to refrain from all types of smoking within the dwelling and on all balconies, patios, and common areas of the property.</p>
+    <p>All types of smoking are prohibited in all public areas of residential properties in accordance with RCW 70.160.075. Smoking in public is allowed only if done in excess of 25 feet from an entrance/exit.</p>
+    <p>Non-compliance may result in: (1) Service of a 10-Day Notice to Comply with Agreement or Vacate; (2) Forfeiture of all or part of your security deposit; (3) Eviction action.</p>
+
+    ${initialsBlock()}
+
+    <hr>
+    <h3>Section 6 — Mold Handout</h3>
+
+    <table class="preview-table">
+      <tr><td><strong>Owner's Name</strong></td><td>${ph(owner,'OWNER_NAME')}</td></tr>
+      <tr><td><strong>Residents' Names</strong></td><td>${ph(tenantNames,'TENANT_NAMES')}</td></tr>
+      <tr><td><strong>Property Address</strong></td><td>${ph(addr1,'ADDRESS_1')}${addr1&&addr2?', ':''}${ph(addr2,'ADDRESS_2')}</td></tr>
+    </table>
+
+    <p>Molds are microscopic organisms that produce enzymes to digest organic matter and spores to reproduce. Problems arise when mold starts digesting organic materials in our homes. The way to control mold growth is to control moisture.</p>
+    <p><strong>To control mold growth:</strong> Fix any moisture problems; stop all water leaks; repair leaking roofs and plumbing; increase air circulation within your home; install and use exhaust fans in bathrooms, kitchens, and laundry rooms; ventilate and insulate the attic and crawlspaces; clean and dry water-damaged materials within 24 to 48 hours; vacuum and clean your home regularly.</p>
+    <p><strong>Health Effects:</strong> You may experience a skin rash, running nose, eye irritation, cough, congestion, and aggravation of asthma. If you or your family members have health problems that you suspect are caused by exposure to mold, you should consult with your physician.</p>
+    <p><strong>To clean up mold:</strong> Protect yourself with goggles, gloves, and breathing protection. Seal off the area. Scrub all affected hard surfaces with a mild detergent solution, optionally with a bleach solution (¼ cup bleach to one quart of water), and finally apply a borate-based detergent solution and do not rinse.</p>
+
+    ${initialsBlock()}
+
+    <hr>
+    <h3>Section 7 — Lead Warning Statement</h3>
+
+    <table class="preview-table">
+      <tr><td><strong>Owner's Name</strong></td><td>${ph(owner,'OWNER_NAME')}</td></tr>
+      <tr><td><strong>Residents' Names</strong></td><td>${ph(tenantNames,'TENANT_NAMES')}</td></tr>
+      <tr><td><strong>Property Address</strong></td><td>${ph(addr1,'ADDRESS_1')}${addr1&&addr2?', ':''}${ph(addr2,'ADDRESS_2')}</td></tr>
+    </table>
+
+    <p>Housing built before 1978 may contain lead-based paint. Lead-based paint, paint chips, and dust can pose health hazards if not managed properly. Lead exposure is especially harmful to young children and pregnant women.</p>
+    <p><strong>Owner's Disclosure:</strong> (A) The owner has no knowledge of lead-based paint and/or lead-based paint hazards in the housing. (B) The owner has no reports or records pertaining to lead-based paint or lead-based paint hazards in the housing.</p>
+    <p><strong>Resident's Acknowledgment:</strong> (A) Resident has received copies of all information listed above. (B) Resident has received the pamphlet <em>Protect Your Family from Lead in Your Home</em>.</p>
+
+    ${initialsBlock()}
+
+    <hr>
+    <h3>Section 8 — Insurance Addendum</h3>
+
+    <p>For the duration of the Lease, Resident is required to maintain and provide the following minimum required insurance coverage: <strong>$100,000 Limit of Liability</strong> for Resident's legal liability for damage to Owner's property for fire, smoke, explosion, backup or overflow of sewer, drain or sump, and water damage.</p>
+    <p>Resident is required to furnish Owner with evidence of Required Insurance prior to occupancy and at the time of each lease renewal period. If at any time Resident does not have Required Insurance, Resident is in breach of the Lease and Owner shall have the right but not the obligation to purchase Required Insurance coverage protecting the sole interest of the Owner and seek contractual reimbursement from the Resident for all costs and expenses associated with such purchase.</p>
+
+    ${initialsBlock()}
+
+    <hr>
+    <h3>Section 9 — Credit Reporting Addendum</h3>
+
+    <p>This Addendum allows Owner to report on-time or delinquent payments made by the Resident. Starting <strong>${ph(leaseStart,'LEASE_START_DATE')}</strong>, reporting will be based on the following monthly charges:</p>
+    <table class="preview-table">
+      <tr><th>Description</th><th>Amount</th></tr>
+      <tr><td>Rent Income</td><td>${ph(monthlyRent,'MONTHLY_RENT')}</td></tr>
+      <tr><td>Pet Rent</td><td>${ph(petRent,'PET_RENT')}</td></tr>
+      <tr><td><strong>Total</strong></td><td><strong>${ph(totalMo,'TOTAL_MONTHLY')}</strong></td></tr>
+    </table>
+    <p>Owner will provide accurate information to a credit reporting service on at least a monthly basis and will work to comply with the requirements of the Fair Credit Reporting Act, 15 U.S.C. § 1681, et seq., and any and all other applicable federal or state laws.</p>
+
+    ${initialsBlock()}
+
+    <hr>
+    <h3>Section 10 — Pet Addendum</h3>
+
+    <table class="preview-table">
+      <tr><td><strong>Owner's Name</strong></td><td>${ph(owner,'OWNER_NAME')}</td></tr>
+      <tr><td><strong>Residents' Names</strong></td><td>${ph(tenantNames,'TENANT_NAMES')}</td></tr>
+      <tr><td><strong>Property Address</strong></td><td>${ph(addr1,'ADDRESS_1')}${addr1&&addr2?', ':''}${ph(addr2,'ADDRESS_2')}</td></tr>
+    </table>
+
+    <h4>10.2 Authorized Pets</h4>
+    <p>${petListStr ? `<strong>${petListStr}</strong>` : `<span class="placeholder">{{PET_LIST}}</span>`}</p>
+
+    <h4>10.3 Fee Information</h4>
+    <table class="preview-table">
+      <tr><th>Description</th><th>Amount</th></tr>
+      <tr><td>Refundable Pet Deposit</td><td>${ph(petDep,'PET_DEPOSIT')}</td></tr>
+      <tr><td>Monthly Pet Rent</td><td>${ph(petRent,'PET_RENT')}</td></tr>
+    </table>
+
+    <h4>10.4 Pet Terms and Conditions</h4>
+    <p>The pet must be registered with the county of the above-listed address. The pet must have proof of all shots and vaccinations and be spayed or neutered. No pets visiting or pet sitting shall be allowed at the property.</p>
+    <p>Return of the pet damage deposit is conditioned upon restoring the Premises to their condition at the commencement of the tenancy, less normal wear and tear. The pet will not be allowed out of the unit unless it is in the custody of the Resident and on a leash not to exceed <strong>five (5) feet</strong> in length. The pet will not be left outside of the unit at any time while unattended.</p>
+    <p>The Resident agrees to keep pets under control at all times. Should the pet become a nuisance due to noise, barking, or damage, the Resident agrees to immediately remove the pet from the premises upon the Owner's request. If Resident does not comply, Resident shall be served a <strong>ten (10) day notice</strong> to comply and possibly face eviction per Washington State Landlord-Tenant Law.</p>
+    <p>As a condition of occupancy, the Resident agrees to provide a copy of an Insurance Policy with minimum liability coverage in the amount of <strong>$100,000</strong> to cover damage and/or injury caused by the pet. This policy must stay in force throughout the term of the tenancy.</p>
+    <p><strong>Carpet and Flooring:</strong> Residents agree to replace ALL carpets at the property if a cat or dog damages the carpet. Residents agree to refinish entire hardwood floors if a cat or dog damages the flooring. Residents understand that security deposit and pet deposit will not cover the expense of replacing/refinishing the carpet/hardwood floors throughout the property. If a replacement or refinishing is required, Residents agree to pay the full balance over what security and pet deposit would cover.</p>
+    <p><strong>Flea Infestation:</strong> If there is a flea infestation after the Residents have moved in which makes the property unsuitable for rent, the Residents are responsible for the loss of rent to the Owner. The average flea treatment takes 45–60 days.</p>
+
+    <h4>10.5 Emergency</h4>
+    <p>In the case of an emergency where there is reasonable cause to believe that a pet has been left alone in the Residents' unit or is creating a disturbance, Owner shall attempt to contact Tenant first. If unsuccessful, Owner shall be permitted to enter the rented premises and may take any appropriate actions with respect to the pet's care. The Resident is responsible for any such costs.</p>
+
+    <h4>10.6 Required Move-Out Cleaning</h4>
+    <p>The Resident agrees to hire and pay professionals to address the following at move-out: (1) Vent cleaning and installing new filters for heating and/or cooling system; (2) Carpet cleaning and addressing pet odor (if any). Professionals must perform the above cleaning within three (3) days after move-out; proof of work (paid receipts) must be provided to the Owner.</p>
+
+    <div class="sig-block">
+      <div class="sig-line">
+        <div>
+          <div class="sig-field"></div>
+          <div class="sig-caption">Resident Signature</div>
+        </div>
+        <div>
+          <div class="sig-date"></div>
+          <div class="sig-caption">Date</div>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+    <h3>Section 11 — Property Condition Report</h3>
+
+    <table class="preview-table">
+      <tr><td><strong>Owner's Name</strong></td><td>${ph(owner,'OWNER_NAME')}</td></tr>
+      <tr><td><strong>Residents' Names</strong></td><td>${ph(tenantNames,'TENANT_NAMES')}</td></tr>
+      <tr><td><strong>Property Address</strong></td><td>${ph(addr1,'ADDRESS_1')}${addr1&&addr2?', ':''}${ph(addr2,'ADDRESS_2')}</td></tr>
+      <tr><td><strong>Number of Smoke/CO Alarms</strong></td><td>8</td></tr>
+      <tr><td><strong>Tested On</strong></td><td>${ph(agDate,'AGREEMENT_DATE')}</td></tr>
+    </table>
+
+    <p>It is in the best interest of the Residents to take pictures on or within 48 hours of moving in to verify no pre-existing damage at the property.</p>
+
+    <table class="preview-table">
+      <tr><th>Area</th><th>Condition</th></tr>
+      <tr><td>Living Room</td><td>Clean and in good condition</td></tr>
+      <tr><td>Dining Room &amp; Halls</td><td>Clean and in good condition</td></tr>
+      <tr><td>Kitchen</td><td>Clean and in good condition</td></tr>
+      <tr><td>Bedrooms</td><td>Clean and in good condition</td></tr>
+      <tr><td>Bathrooms</td><td>Clean and in good condition</td></tr>
+      <tr><td>Floors</td><td>Clean and in good condition</td></tr>
+      <tr><td>Drapes, Blinds, Windows</td><td>Clean and in good condition</td></tr>
+      <tr><td>Appliances</td><td>Clean and in good condition</td></tr>
+      <tr><td>Water Heater (≤ 120°F)</td><td>Yes</td></tr>
+      <tr><td>Visible Pests</td><td>None</td></tr>
+    </table>
+
+    <p>Resident(s) agree that the Premises is clean, sanitary, and in good operating condition. If the Residents find any damage or excessive sign of wear and tear, they must report to the Owner within <strong>14 days</strong> of move-in via email or in writing. Verbal or text message is not an acceptable method to communicate damages.</p>
+
+    <div class="sig-block">
+      <div class="sig-line">
+        <div>
+          <div class="sig-field"></div>
+          <div class="sig-caption">Resident Signature</div>
+        </div>
+        <div>
+          <div class="sig-date"></div>
+          <div class="sig-caption">Date</div>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+    <h3>Section 12 — Yard / Lawn Maintenance</h3>
+
+    <p>In renting this house from Owner, it is agreed and understood that the Residents are required to do the following:</p>
+    <ol type="A">
+      <li><strong>Mow and Trim</strong> the lawn a minimum of once every other week during the growing season (generally March through October).</li>
+      <li><strong>Trim and Prune</strong> bushes, hedges, and trees of excess growth a minimum of once each year or as necessary.</li>
+      <li><strong>Weed and Remove</strong> grass in flower beds a minimum of once every 90 days during the growing season. Remove any weeds and grass growing at curbs, sidewalks, and driveways at all times.</li>
+      <li><strong>Water</strong> the lawn and yard to maintain a healthy root system for the lawn and plants.</li>
+      <li><strong>Yard Waste</strong> — All clippings and other yard wastes must be removed from the property at the Residents' own expense.</li>
+      <li><strong>Down Spouts</strong> — Keep bottom drains free of debris.</li>
+      <li><strong>BBQ Grill</strong> — Keep at least 10 feet away from the structure of the house.</li>
+      <li>No trees can be removed without the Owner's written approval.</li>
+    </ol>
+    <p>Residents shall be served a Ten-Day Notice to Comply or Vacate Premises for non-compliance. With non-compliance, the Owner, at their option, may pursue legal action for eviction, or increase rent by Market Value per month and maintain the lawn/yard service at the Owner's expense.</p>
+    <p><strong>Winterizing Water Pipes:</strong> When freezing weather is expected: (1) Keep room temperature at a level to sufficiently warm the walls containing water pipes; (2) Leave cabinet doors open below kitchen and bathroom sinks; (3) Cold water taps may be left running at a light trickle when temperatures are expected to plunge; (4) Wrap outdoor faucets or provide commercial insulation and disconnect shut-off valves to outdoor faucets where possible.</p>
+
+    <div class="sig-block">
+      <div class="sig-line">
+        <div>
+          <div class="sig-field"></div>
+          <div class="sig-caption">Resident Signature</div>
+        </div>
+        <div>
+          <div class="sig-date"></div>
+          <div class="sig-caption">Date</div>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+    <h3>Signatures</h3>
+
+    <p>This Residential Lease Agreement is entered into as of <strong>${ph(agDate,'AGREEMENT_DATE')}</strong> between Owner <strong>${ph(owner,'OWNER_NAME')}</strong> and Residents <strong>${ph(tenantNames,'TENANT_NAMES')}</strong> for the Premises at <strong>${ph(addr1,'ADDRESS_1')}${addr1&&addr2?', ':''}${ph(addr2,'ADDRESS_2')}</strong>.</p>
+
+    <div class="sig-block">
+      <div class="sig-line">
+        <div>
+          <div class="sig-field"></div>
+          <div class="sig-caption">Owner Signature</div>
+        </div>
+        <div>
+          <div class="sig-date"></div>
+          <div class="sig-caption">Date</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:#777;font-family:'Instrument Sans',sans-serif;margin-top:4px;">
+        Printed Name: ${ph(owner,'OWNER_NAME')}
+      </div>
+    </div>
+
+    ${getSignatureBlocks()}
+
+    <p style="font-size:11px;color:#999;font-family:'Instrument Sans',sans-serif;text-align:center;margin-top:32px;border-top:1px solid #eee;padding-top:12px;">
+      This agreement is governed by the laws of the State of Washington.
+    </p>
+  `;
+}
+
+// ═══════════════════════════════════════════════
+// PDF GENERATION
+// ═══════════════════════════════════════════════
+function generatePDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'pt', format: 'letter' });
+
+  const margins = { top: 72, left: 72, right: 72, bottom: 72 };
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const contentW = pageW - margins.left - margins.right;
+
+  // fonts
+  const FONT_BODY   = 'times';
+  const FONT_SANS   = 'helvetica';
+  const SIZE_BODY   = 10;
+  const SIZE_H1     = 18;
+  const SIZE_H2     = 9;
+  const SIZE_H3     = 11;
+  const SIZE_H4     = 10;
+  const SIZE_SMALL  = 8.5;
+  const C_INK       = [26, 26, 26];
+  const C_ACCENT    = [139, 58, 42];
+  const C_MID       = [80, 80, 80];
+  const C_LIGHT     = [140, 140, 140];
+  const C_RULE      = [220, 215, 207];
+  const C_SHADED    = [247, 245, 242];
+
+  let y = margins.top;
+  let pageNum = 1;
+
+  function checkPage(needed = 20) {
+    if (y + needed > pageH - margins.bottom) {
+      doc.addPage();
+      pageNum++;
+      y = margins.top;
+      // page number footer
+      doc.setFont(FONT_SANS, 'normal');
+      doc.setFontSize(SIZE_SMALL);
+      doc.setTextColor(...C_LIGHT);
+      doc.text(`Page ${pageNum}`, pageW / 2, pageH - 36, { align: 'center' });
+    }
+  }
+
+  function rule(color = C_RULE, weight = 0.5) {
+    doc.setDrawColor(...color);
+    doc.setLineWidth(weight);
+    doc.line(margins.left, y, pageW - margins.right, y);
+    y += 8;
+  }
+
+  function h1(text) {
+    checkPage(40);
+    doc.setFont(FONT_BODY, 'bold');
+    doc.setFontSize(SIZE_H1);
+    doc.setTextColor(...C_INK);
+    doc.text(text, pageW / 2, y, { align: 'center' });
+    y += 6;
+  }
+
+  function subtitle(text) {
+    checkPage(20);
+    doc.setFont(FONT_SANS, 'normal');
+    doc.setFontSize(SIZE_H2);
+    doc.setTextColor(...C_LIGHT);
+    const spaced = text.split('').join(' ');
+    doc.text(spaced.toUpperCase(), pageW / 2, y, { align: 'center' });
+    y += 20;
+  }
+
+  function sectionHead(text) {
+    checkPage(30);
+    y += 10;
+    doc.setFillColor(...C_ACCENT);
+    doc.rect(margins.left, y - 12, contentW, 18, 'F');
+    doc.setFont(FONT_SANS, 'bold');
+    doc.setFontSize(SIZE_H2);
+    doc.setTextColor(255, 255, 255);
+    doc.text(text.toUpperCase(), margins.left + 8, y);
+    y += 10;
+  }
+
+  function subHead(text) {
+    checkPage(20);
+    y += 8;
+    doc.setFont(FONT_SANS, 'bold');
+    doc.setFontSize(SIZE_H4);
+    doc.setTextColor(...C_ACCENT);
+    doc.text(text, margins.left, y);
+    y += 4;
+    doc.setDrawColor(...C_ACCENT);
+    doc.setLineWidth(0.3);
+    doc.line(margins.left, y, margins.left + doc.getTextWidth(text), y);
+    y += 8;
+  }
+
+  function para(text, opts = {}) {
+    const indent = opts.indent || 0;
+    const x = margins.left + indent;
+    const w = contentW - indent;
+    doc.setFont(FONT_BODY, opts.bold ? 'bold' : 'normal');
+    doc.setFontSize(SIZE_BODY);
+    doc.setTextColor(...(opts.color || C_INK));
+    const lines = doc.splitTextToSize(text, w);
+    lines.forEach(line => {
+      checkPage(14);
+      doc.text(line, x, y);
+      y += 14;
+    });
+    y += opts.after !== undefined ? opts.after : 4;
+  }
+
+  function listItem(text, num, opts = {}) {
+    const indent = 18;
+    const x = margins.left + indent;
+    const w = contentW - indent;
+    doc.setFont(FONT_BODY, 'normal');
+    doc.setFontSize(SIZE_BODY);
+    doc.setTextColor(...C_INK);
+    const bullet = opts.bullet || `${num}.`;
+    doc.text(bullet, margins.left + 4, y);
+    const lines = doc.splitTextToSize(text, w);
+    lines.forEach((line, li) => {
+      checkPage(14);
+      doc.text(line, x, y);
+      y += 14;
+    });
+    y += 2;
+  }
+
+  function tableRow(cols, widths, isHeader = false, shaded = false) {
+    const rowH = 16;
+    checkPage(rowH + 4);
+    let x = margins.left;
+    if (shaded || isHeader) {
+      doc.setFillColor(...(isHeader ? C_ACCENT : C_SHADED));
+      doc.rect(x, y - 12, contentW, rowH, 'F');
+    }
+    doc.setDrawColor(...C_RULE);
+    doc.setLineWidth(0.3);
+    doc.rect(margins.left, y - 12, contentW, rowH);
+    cols.forEach((col, i) => {
+      doc.setFont(FONT_SANS, isHeader ? 'bold' : 'normal');
+      doc.setFontSize(isHeader ? SIZE_SMALL : SIZE_BODY);
+      doc.setTextColor(...(isHeader ? [255,255,255] : C_INK));
+      doc.text(String(col || ''), x + 6, y - 1);
+      x += widths[i];
+      if (i < cols.length - 1) {
+        doc.setDrawColor(...C_RULE);
+        doc.line(x, y - 12, x, y + 4);
+      }
+    });
+    y += rowH - 2;
+  }
+
+  function infoTable(rows) {
+    rows.forEach((row, i) => tableRow(row, [180, contentW - 180], false, i % 2 === 0));
+    y += 6;
+  }
+
+  function sigLine(label, name = '') {
+    checkPage(40);
+    y += 8;
+    doc.setDrawColor(...C_INK);
+    doc.setLineWidth(0.4);
+    doc.line(margins.left, y, margins.left + 300, y);
+    doc.line(margins.left + 320, y, margins.left + contentW, y);
+    y += 4;
+    doc.setFont(FONT_SANS, 'normal');
+    doc.setFontSize(SIZE_SMALL);
+    doc.setTextColor(...C_LIGHT);
+    doc.text(label + (name ? ` — ${name}` : ''), margins.left, y);
+    doc.text('Date', margins.left + 320, y);
+    y += 14;
+  }
+
+  function initialsLine(name = '') {
+    checkPage(30);
+    y += 6;
+    doc.setFillColor(...C_SHADED);
+    doc.roundedRect(margins.left, y - 10, contentW, 22, 2, 2, 'F');
+    doc.setDrawColor(...C_RULE);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(margins.left, y - 10, contentW, 22, 2, 2, 'S');
+    doc.setDrawColor(...C_INK);
+    doc.setLineWidth(0.4);
+    doc.line(margins.left + 10, y + 6, margins.left + 90, y + 6);
+    doc.setFont(FONT_SANS, 'normal');
+    doc.setFontSize(SIZE_SMALL);
+    doc.setTextColor(...C_MID);
+    doc.text((name ? name + ' — ' : '') + 'Initials', margins.left + 96, y + 7);
+    doc.text('Date: _______________', margins.left + 320, y + 7);
+    y += 20;
+  }
+
+  // get values
+  const owner      = val('ownerName') || '{{OWNER_NAME}}';
+  const addr1v     = val('addr1') || '{{ADDRESS_1}}';
+  const addr2v     = val('addr2') || '{{ADDRESS_2}}';
+  const agDate     = fmtDate(val('agreementDate')) || '{{DATE}}';
+  const lStart     = fmtDate(val('leaseStart')) || '{{START_DATE}}';
+  const lEnd       = fmtDate(val('leaseEnd')) || '{{END_DATE}}';
+  const lTerm      = val('leaseTerm') || '{{TERM}}';
+  const mRent      = val('monthlyRent') || '{{RENT}}';
+  const sDep       = val('secDeposit') || '{{SEC_DEP}}';
+  const pDep       = val('petDeposit') || '{{PET_DEP}}';
+  const pRent      = val('petRent') || '{{PET_RENT}}';
+  const totMo      = val('totalMonthly') || '{{TOTAL}}';
+  const aFee       = val('appFee') || '{{APP_FEE}}';
+  const rIncDate   = fmtDate(val('rentIncDate')) || '{{INC_DATE}}';
+  const rIncAmt    = val('rentIncAmt') || '{{INC_AMT}}';
+  const tNames     = getTenantNames() || '{{TENANT_NAMES}}';
+  const address    = `${addr1v}, ${addr2v}`;
+
+  // page 1 footer
+  doc.setFont(FONT_SANS, 'normal');
+  doc.setFontSize(SIZE_SMALL);
+  doc.setTextColor(...C_LIGHT);
+  doc.text('Page 1', pageW / 2, pageH - 36, { align: 'center' });
+
+  // ── TITLE ──
+  h1('RESIDENTIAL LEASE AGREEMENT');
+  subtitle('Washington State');
+
+  // meta box
+  doc.setFillColor(...C_SHADED);
+  doc.roundedRect(margins.left, y, contentW, 68, 3, 3, 'F');
+  doc.setDrawColor(...C_RULE);
+  doc.setLineWidth(0.4);
+  doc.roundedRect(margins.left, y, contentW, 68, 3, 3, 'S');
+  y += 14;
+  const metaX = margins.left + 12;
+  const metaPairs = [
+    ['Agreement Date', agDate],
+    ['Property', address],
+    ['Owner', owner],
+    ['Resident(s)', tNames],
+  ];
+  metaPairs.forEach(([k, v]) => {
+    doc.setFont(FONT_SANS, 'bold'); doc.setFontSize(SIZE_SMALL); doc.setTextColor(...C_MID);
+    doc.text(k + ':', metaX, y);
+    doc.setFont(FONT_BODY, 'normal'); doc.setFontSize(SIZE_BODY); doc.setTextColor(...C_INK);
+    doc.text(v, metaX + 100, y);
+    y += 15;
+  });
+  y += 8;
+
+  // ── SECTION 1 ──
+  sectionHead('Section 1 — Lease Terms');
+
+  subHead('1.1 Overview');
+  para(`This Initial Agreement is made on ${agDate} between Owner ${owner} (hereinafter called "Owner") and ${tNames} (hereinafter called "Resident"), for rental Premises located at: ${address} (hereinafter called the "Premises.")`);
+
+  subHead('1.2 Term');
+  para(`The term of this Agreement shall be a Lease for a term of ${lTerm} months beginning ${lStart} and ending ${lEnd}.`);
+  para('Upon expiration of this term, all Resident\'s rights to occupy the Premises shall cease without right to extend the term hereof. This Agreement shall not revert to a month-to-month tenancy following expiration of the term.');
+  para('Holdover Fee — In the event that the Resident remains in possession of the rental property beyond the initial term of the lease without executing a new lease or obtaining the Owner\'s consent, the Resident shall be held liable for an unauthorized month-to-month fee equivalent to 10% of the monthly rent. This fee is in addition to the rent amount outlined in the lease agreement.');
+
+  subHead('1.3 Rent');
+  tableRow(['Description', 'Amount'], [contentW * 0.7, contentW * 0.3], true);
+  [['Monthly Rent', mRent], ['Pet Rent', pRent], ['Total Monthly Due', totMo]].forEach(([d,a],i) => tableRow([d,a],[contentW*0.7,contentW*0.3],false,i%2===0));
+  y += 6;
+  para('Prorated Rent, if any, shall apply to the second month of tenancy and shall be payable on the first day of the second month of tenancy.');
+  para('The total amount of monthly rent due is considered "Rent" and is payable in advance by the first day of each and every month to Owner, or any such other place that the Owner may from time to time designate.');
+  para('Late Charge: Rent received more than five (5) days after the Rent Due Date shall result in a $50.00 late payment charge plus $20.00 each additional day thereafter that rent has not been paid in full.');
+  para('Returned Payment: Any payment which fails to clear the bank shall be treated as unpaid rent and shall be subject to the aforementioned late payment charge, plus a $45.00 returned payment fee.');
+  para('Notice Fees: If Owner shall give a statutory Notice to Pay or Vacate pursuant to RCW 59.12 et seq. or RCW 59.18 et seq., Resident agrees to pay $250.00 for preparing and giving the notice.');
+
+  subHead('1.4 Deposit');
+  para(`The Resident shall pay a Security Deposit in the total amount of ${sDep}, which has been paid in full. The deposit is for all purposes, including unpaid rent, damage, cleaning, late payment, utilities, keys, and other charges. The Resident's liability is not limited by the amount of the deposit.`);
+  para('Labor and administrative costs for cleaning and repairing the Premises shall be at the rate of $65.00 per hour. Resident agrees to hire professional cleaners and provide receipt of the cleaning by the move-out date.');
+
+  subHead('1.7 Applications and Screening Fees');
+  para(`Application and/or screening fees in the amount of ${aFee} per applicant are non-refundable. Resident warrants the accuracy of all information contained on the Resident's rental application.`);
+
+  subHead('1.8 Termination of Tenancies');
+  para('Resident understands and agrees that this tenancy shall terminate at 4:00 PM on the last day of occupancy. It is Resident\'s obligation to have the Premises vacant and thoroughly clean by that hour.');
+
+  subHead('1.9 Utility Charges');
+  para('Paid for by Resident directly to utility provider: All utilities including Electricity, Garbage, Sewer, Water, Natural Gas/Oil, Landscaping, and Internet.');
+  para('Utilities included in Rent: None. Non-payment of utility charges may lead to an eviction proceeding. Utilities are considered as "Rent."');
+
+  subHead('1.10 Vehicles');
+  const vStr = getVehicleList() ? getVehicleList().replace(/<br>/g, '; ') : '{{AUTHORIZED_VEHICLES}}';
+  para(`Resident is authorized to park the following vehicle(s) on the property: ${vStr}. Unauthorized vehicles may be removed or towed at the vehicle owner's expense.`);
+
+  subHead('1.11 Inspection / Re-Lease / Sale');
+  para('Owner may enter the Property to inspect it or make alterations or repairs with two (2) days\' notice. If Owner wishes to show the Property to prospective purchasers or Residents, one (1) day\'s notice shall be required. If access is denied after proper notice, the Resident will be fined $100.00 for each violation per RCW 59.18.150.');
+
+  subHead('1.12 Early Move-Out');
+  para('If Resident vacates the Premises prior to the expiration hereof or without notice, Resident shall be liable for additional rent as provided for in RCW 59.18.310, plus a one-month rent re-letting fee, and the payment of all utilities until the new Resident is moved in.');
+
+  subHead('1.14 Lockout Clause / Keys; Locks');
+  para('The Resident will be responsible for any costs associated with lost or stolen keys or access cards and remotes. The Resident may not re-key or remove any locks. Owner does not provide locksmith services.');
+
+  subHead('1.15 Asbestos');
+  para('The Premises may contain asbestos and/or other substances known to cause cancer and/or birth defects. Resident must not take any action which damages or disturbs the ceiling, including piercing, hanging objects, attaching fixtures, painting, or replacing light fixtures. Resident must notify Owner immediately in writing of any damage to or deterioration of the ceiling.');
+
+  subHead('1.17 Smoke Detection Devices / Fire Safety');
+  para('It is the responsibility of Resident to maintain all smoke detection devices, including replacement of any batteries. Failure to comply may result in a fine of up to $200.00. Resident agrees to test the smoke detector monthly and report any malfunctions in writing.');
+
+  subHead('1.18 Carbon Monoxide Detection Devices');
+  para('In accordance with RCW 19.27.530, a minimum of one carbon monoxide detector is provided. The Resident shall not tamper with, remove batteries, or otherwise disable any carbon monoxide detection devices. Resident agrees to test monthly and report malfunctions in writing.');
+
+  subHead('1.19 Use / Assignments or Sub-Letting');
+  para('Resident shall not use the Premises for any business purpose, including but not limited to AirBnB and VRBO. The Premises shall be used as the primary full-time residence for the following named persons:');
+  tenants.filter(t => t.name).forEach((t, i) => {
+    const info = [t.name, t.role, t.phone, t.email].filter(Boolean).join(' · ');
+    listItem(info, i + 1, { bullet: '•' });
+  });
+  y += 4;
+  para('Changes in occupancy are not permitted without the prior written approval of the Owner. A non-refundable administrative fee of $250.00 shall be charged for any request to add or remove a Resident.');
+
+  subHead('1.25 Pets and Animals');
+  para('Unless otherwise provided under federal, state, or local law, no animals (including mammals, reptiles, birds, fish, rodents, and insects) are allowed, even temporarily, anywhere on the premises unless authorized in writing. You must remove an illegal or unauthorized animal within 24 hours of notice from us, or you will be considered in default of this Lease Agreement.');
+  para('We will authorize an assistance animal for a disabled person. Animal deposits, additional rents, fees or other charges will not be required for an assistance animal needed due to disability, including an emotional support or service animal, as authorized under federal, state, or local law.');
+  para('No pets will be allowed to visit the property and no "pet-sitting" shall be allowed. If a pet becomes a problem in our sole opinion, we reserve the right to require that the pet be removed from the property. Once a pet has been removed from the property, the pet deposit for that pet shall not be returned during the tenancy. If you have pets, they must be secured during maintenance work.');
+  para('If an animal has been on the premises at any time during your term of occupancy, Resident assumes all costs of restoring Premises, including costs to de-flea, fumigate, clean or replace floor coverings, yard restoration, and cost to analyze floors for the presence of animal urine/waste or pest infestation. These policies include "guest pets." No pets are to be added or substituted without the Owner\'s written permission. We may kennel the animal or contact a humane society or local authority for pickup. You must pay for the animal\'s reasonable care and kenneling charges.');
+
+  subHead('1.26 Attorneys\' Fees / Venue and Jurisdiction');
+  para('The prevailing party shall be entitled to recover its reasonable attorney\'s fees and court costs. This Agreement shall be governed by the laws of the State of Washington. Venue shall be in the District or Superior Court with jurisdiction over the area in which the Premises are located.');
+
+  subHead('1.27 Non-Waiver of Breach and Severability');
+  para('The failure of Owner to insist upon the strict performance of any term shall not be construed to be a waiver or relinquishment of any such term. If any clause or provision of this Agreement is illegal, invalid, or unenforceable under present or future laws effective during the term hereof, the remainder of the Agreement shall not be affected thereby, and a valid and enforceable clause as similar as possible shall be substituted in its place.');
+
+  subHead('1.33 Renters Insurance — Required');
+  para('Renters liability insurance is required. A minimum of $100,000 of liability coverage must be obtained. Resident is required to provide proof of current renters insurance policy on the day of move-in, again at lease renewal, and/or when asked by the Owner. All individuals residing in the rental property must be named on the rental insurance policy.');
+
+  subHead('1.34 Liens and Sales');
+  para('This Lease is subject and subordinate to any mortgage or deed of trust which is now or hereafter a lien upon the Property or the Premises.');
+  para('Termination Upon Sale: Pursuant to RCW 59.18.650(2)(e), Owner may terminate this tenancy if Owner has entered into a bona fide agreement to sell the Premises and the buyer or a member of the buyer\'s immediate family intends to occupy the Premises as their primary residence. Owner shall provide Resident with at least ninety (90) days\' written notice prior to the termination date. If the sale does not close within 90 days after the Resident vacates, Owner shall either offer the Resident the opportunity to reinstate the tenancy or pay the Resident the equivalent of one (1) month\'s rent as compensation, as required by RCW 59.18.650.');
+
+  subHead('1.35A Rent Payment — Online Portal');
+  const portalItems = [
+    'Required Payment Method: All rent and other charges due under this Agreement must be paid through the Owner\'s designated online rental payment portal. The portal currently in use is apartments.com, though Owner reserves the right to designate a different portal upon written notice to Resident.',
+    'Auto-Pay Required: Resident is required to enroll in automatic payments through the portal. It is Resident\'s sole responsibility to ensure that the auto-pay amount is correct and current at all times, including in the event of any rent increase.',
+    'Accepted Payment Methods: eCheck (ACH) is accepted. Personal checks and money orders are not accepted. Debit and credit card payments may be accepted through the portal subject to any fees imposed by the portal provider, which are the sole responsibility of Resident.',
+    'Failed Payments: Any payment that does not clear for any reason shall be treated as unpaid rent and subject to the returned payment fee described in Section 1.3. Resident\'s submission of a payment and receipt of a confirmation number does not constitute confirmation that the payment has cleared.',
+    'Cancellation of Auto-Pay: If Resident sets up automatic payments, those payments will continue until Resident cancels them. Owner cannot reverse, cancel, or modify payments on Resident\'s behalf. If a payment is made in error, Owner will issue a refund by check to Resident once the payment has fully cleared.',
+    'Owner Access: Owner does not have access to Resident\'s portal account and does not control or withdraw funds from Resident\'s account. All payments made through the portal are made by Resident\'s express authorization.',
+  ];
+  portalItems.forEach((item, i) => listItem(item, i + 1));
+
+  subHead('1.36 Resident\'s Obligations — Part A (General)');
+  const partA = [
+    'To pay all rent and other charges, including utilities and installment payments of last month\'s rent and security deposit, promptly when due or assessed, for which Resident is responsible and to provide proof of payment.',
+    'To execute all revised rental agreements upon request upon 30 days\' notice before a new rental period; except for rent increases which require 60 days\' notice.',
+    'To notify and deliver to Owner any legal notice received from any person or governmental agency which relates to the Premises. Fines assessed to Owner by any governmental agency resulting from a Resident\'s negligent behavior shall be the responsibility of the Resident to pay.',
+    'Provide the Owner with emergency contact information within ten (10) days of commencement of tenancy.',
+    'Not to do or keep anything in or about the Premises that will increase the present insurance rate thereon. Resident agrees to reimburse Owner for any increase that might occur for violation of this rule.',
+    'Resident shall maintain liability insurance and licenses upon all motor vehicles brought onto the Premises.',
+    'If the Premises should fail an inspection required by local jurisdiction due to the Resident(s), any fines or costs associated with reinspection shall be the responsibility of the Resident.',
+    'To permit Owner to display "for rent" or "for sale" signs at any time during a tenancy.',
+    'Not to permit any person to occupy the Premises other than authorized occupants or guests as defined in Section 1.19.',
+    'Except in cases of emergency, to permit Owner to enter the Premises at reasonable times after notice is given in accordance with RCW 59.18.150(6). No notice is required to enter areas generally accessible to the public.',
+    'Owner is not obligated to provide window or door screens. If any are presently installed, the Owner has no obligation to maintain or replace them.',
+  ];
+  partA.forEach((item, i) => listItem(item, i + 1));
+
+  subHead('1.37 Resident\'s Obligations — Part B (Conduct, Behavior and Safety)');
+  const partB = [
+    'Resident is responsible for their own proper conduct and that of all guests.',
+    'To comply with all laws and ordinances; to refrain from use of the Premises for prostitution, drug manufacture/use/possession/sale, any felony or misdemeanor, or any other illegal use.',
+    'Resident shall not keep or maintain an attractive nuisance on the Premises.',
+    'Resident is to follow all bans/laws, including but not limited to burn bans.',
+    'No smoking of any substance is allowed in or on the Premises.',
+    'To comply with any trespass admonishments issued by Owner.',
+    'Resident shall not make or allow any disturbing noises which will interfere with the rights, comforts, or conveniences of others.',
+    'Keys for Premises should not be copied nor given to anyone other than those listed as lease or occupant without the Owner\'s prior written consent.',
+    'Resident must report any water leakage, fire hazard, or safety hazard immediately to the Owner.',
+  ];
+  partB.forEach((item, i) => listItem(item, i + 1));
+
+  subHead('1.38 Resident\'s Obligations — Part C (Maintenance, Repairs and Alterations)');
+  const partC = [
+    'Resident\'s dirt, destruction, damage of any nature, neglect, or disrepair to carpet does not constitute normal wear and tear. Carpets must be shampooed by Resident upon vacancy. Resident shall obtain area rugs or other coverings to protect hardwood floors.',
+    'Resident agrees to provide written notice to Owner regarding any habitability issues and to give Owner the opportunity to cure the defective condition prior to exercising any other option granted to the Resident under law.',
+    'Resident shall reimburse Owner promptly in the amount of the loss, property damage, or cost of repairs or service, including plumbing trouble caused by negligence or improper use.',
+    'Resident understands and agrees that any damage caused by smoking, candles, incense, oil lamps, or burning of any other product shall not constitute wear resulting from ordinary use of the Premises.',
+    'Residents shall be responsible for any damage resulting from windows or doors left open or unlocked.',
+    'To protect against freezing of water pipes and waste pipes and stoppage of same in and about the Premises.',
+    'Not to intentionally or negligently destroy, deface, damage, change, repair, or remove any part of the structure or dwelling.',
+    'Not to make any alterations, additions, painting, or improvements to the Premises without the prior written approval of Owner.',
+    'Prior to the installation of a satellite dish, the Resident must first give notice to the Owner. Installation must be performed by a licensed professional.',
+    'Resident shall not disconnect or relocate within the dwelling any Owner-supplied appliance without Owner\'s written consent.',
+    'Not to install a waterbed or aquarium without the prior written approval of Owner.',
+    'In the event that the Resident requests testing and/or service calls which prove to be unsubstantiated, or the condition is caused by the Resident, the Resident must pay for all actual service call charges.',
+    'To inspect and maintain in compliance with the information tag thereon all Owner in-unit supplied fire extinguishers.',
+    'Owner is not obligated to provide window or door screens.',
+    'Residents are responsible for light bulbs, garbage disposer, batteries in devices, any water filter, or air filters.',
+    'The Resident is obligated to immediately inform the Owner of any work orders or damages that have occurred within the rental unit.',
+  ];
+  partC.forEach((item, i) => listItem(item, i + 1));
+
+  subHead('1.39 Resident\'s Obligations — Part D (Appearance, Cleanliness and Trash)');
+  const partD = [
+    'To take all reasonable precautions to prevent the presence of bed bugs.',
+    'To take all reasonable precautions to prevent the presence of mold or mildew in the Premises as per attached Mold Handout, such steps to include, generally, using exhaust fans where available in humid locations, removing condensation from windows and other surfaces, providing adequate ventilation to the Premises at all times, storing possessions and furniture so as to provide for air circulation, etc. Resident agrees to promptly notify Owner of the presence of mold or mildew.',
+    'The Premises must be kept clean, sanitary and free from objectionable odors. To properly dispose of all rubbish, garbage, and other waste at reasonable and regular intervals and to follow all recycling procedures. To assume all costs of extermination and fumigation for infestation caused by Resident.',
+    'Resident agrees not to store any hazardous material including but not limited to unreasonable amounts of flammable materials, asbestos, petroleum and petroleum by-products, old batteries, or paint on the Premises.',
+    'Except as otherwise permitted by law, to display no signs or placards on or about the Premises that are visible to the public.',
+    'To maintain the plantings and lawn and to keep the grass, lawn, flowers, planting beds, trees and shrubs in good condition and repair by watering, fertilizing and otherwise maintaining those elements in good health and in an appearance consistent with the character of the surrounding neighborhood. Owner reserves the right to have professional gardeners maintain the yard at Resident\'s expense should Resident fail to comply. To keep the sidewalks or paths surrounding the premises free and clear of all obstructions, snow and ice.',
+    'To provide and maintain receptacles for garbage and trash, and to contract for collection of the same. The premises must be kept clean, sanitary and free from objectionable odors. To properly dispose of all rubbish, garbage, and other waste at reasonable and regular intervals and to follow all recycling procedures. Resident is responsible for all costs of extermination and fumigation for infestation caused by Resident.',
+  ];
+  partD.forEach((item, i) => listItem(item, i + 1));
+
+  subHead('1.46 Resident\'s Obligations Upon Vacating Home');
+  para('At the termination of the tenancy, it is the Resident\'s responsibility to leave the property in good, clean, move-in condition, including: Give Owner all keys and opening devices; Vacate and surrender Home empty of all persons and personal property; Clean and provide receipts as specified in Section 1.4; Give written notice to Owner of Resident\'s forwarding address.');
+  para('Cleaning Expectations: Remove all belongings and trash, spot wash walls, wash windows, sills & tracks, wash curtain rods and blinds, wash light fixtures and replace burned out bulbs, wash all closet shelves and cabinets, vacuum and professionally clean carpets and treat for any stains by a carpet cleaning professional (rental of a carpet cleaner machine will not satisfy this obligation) and provide a receipt upon request; clean floors, clean patios and decks, repair any damages, mow/edge/rake lawns, clean garage and storage areas, clean all appliances, wash tubs, toilets, showers, etc., and clean grouted areas.', { bold: false });
+  para('Resident agrees to pay an administrative fee of $25.00 for each bill or service charged on Resident\'s damage, cleaning, and security deposit accounting. There will also be a $65.00 fee for re-inspections of vendor work or trips to let vendors into the Property. Resident agrees to pay a meter reading fee of $35.00 in the event that the Owner is required to read any utility meters to close out the Resident\'s account.');
+
+  subHead('1.47 Rental Property Specific');
+  para(`Every Resident who has signed this Agreement has personally viewed the property and accepts it in its current condition. The rent will increase by ${rIncAmt} starting ${rIncDate}.`);
+
+  subHead('1.49 Summary of Funds Received and Due');
+  tableRow(['Description', 'Amount'], [contentW * 0.7, contentW * 0.3], true);
+  [['Monthly Rent', mRent], ['Refundable Pet Deposit', pDep], ['Pet Rent', pRent], ['Security Deposit', sDep]].forEach(([d,a],i) => tableRow([d,a],[contentW*0.7,contentW*0.3],false,i%2===0));
+  y += 8;
+
+  const responsibleTenants = tenants.filter(t => t.role === 'Financially Responsible' && t.name);
+  responsibleTenants.forEach(t => initialsLine(t.name));
+  if (!responsibleTenants.length) initialsLine();
+
+  // ── SECTION 2 ──
+  sectionHead('Section 2 — Rental Agreement Buy-Out Agreement');
+  infoTable([
+    ['Owner\'s Name', owner],
+    ['Residents\' Names', tNames],
+    ['Property Address', address],
+    ['Lease Start Date', lStart],
+    ['Lease End Date', lEnd],
+    ['Lease Term', `${lTerm} months`],
+  ]);
+  para('The purpose of this Buy-Out Agreement is to give you the right to buy out of your Rental Agreement early. In order to buy out early, your notice must be signed by all Residents listed in the rental agreement.');
+  para('You may buy out of the rental agreement prior to the end of the lease term if all of the following occur: (1) You give written notice of buy-out at least 30 days prior to the new termination date; (2) You are not in default; (3) You move out on or before the new termination date; (4) You pay a buy-out fee of 2.5 times (250%) the current rent; (5) You are current in the payment of all amounts owing through the termination date. The buy-out fee is due and payable no later than ten (10) days after you give notice to vacate.');
+  responsibleTenants.forEach(t => initialsLine(t.name));
+  if (!responsibleTenants.length) initialsLine();
+
+  // ── SECTION 3 ──
+  sectionHead('Section 3 — Pest and Bed Bug Addendum');
+  infoTable([['Owner\'s Name', owner], ['Residents\' Names', tNames], ['Property Address', address]]);
+  para('Resident(s) declare that all furnishings and other personal items being brought into the unit are free from bed bugs. Resident shall not use or bring second-hand furnishings which have not first been inspected for the presence of bed bugs. The Resident shall cover all mattresses and box springs with impermeable covers. Resident agrees to reimburse the Owner for all treatment costs if it is determined that a bed bug infestation began within the Resident\'s unit. If Resident fails to report ANY pest infestation within ten (10) days of move-in, it shall be an acknowledgment that the Property is in an acceptable and pest-free condition.');
+  responsibleTenants.forEach(t => initialsLine(t.name));
+  if (!responsibleTenants.length) initialsLine();
+
+  // ── SECTION 4 ──
+  sectionHead('Section 4 — Crime Free Addendum');
+  infoTable([['Owner\'s Name', owner], ['Residents\' Names', tNames], ['Property Address', address]]);
+  const crimeItems = [
+    'Illegal Drugs: Resident agrees to keep the Premises "drug-free" at all times.',
+    'Substance Abuse: Resident agrees that Resident, any family member, and any guest or invitee shall not use controlled substances in a manner that will disturb the peace of other Residents or neighbors, or endanger the health, safety, or well-being of any person.',
+    'Illegal Gang Activity: Resident agrees that no one shall engage in any gang-related activity on the Premises.',
+    'Graffiti: Resident agrees that Resident, any family member, or any guest or invitee shall not deface any property on property grounds.',
+    'Criminal Activity: Resident shall not engage in criminal activity, including prostitution, threats, intimidation, possession of dangerous weapons, or unlawful discharge of firearms.',
+    'Domestic Violence: Any incident meeting the definition of domestic violence causing physical harm will result in Termination of Tenancy of the perpetrator according to RCW 59.18.575.',
+  ];
+  crimeItems.forEach((item, i) => listItem(item, i + 1));
+  responsibleTenants.forEach(t => initialsLine(t.name));
+  if (!responsibleTenants.length) initialsLine();
+
+  // ── SECTION 5 ──
+  sectionHead('Section 5 — Smoke Free Addendum');
+  infoTable([['Owner\'s Name', owner], ['Residents\' Names', tNames], ['Property Address', address]]);
+  para('The rental property at the above address has been designated as a "Smoke-Free Residence" requiring all Residents/Occupants, guests, and invitees to refrain from all types of smoking within the dwelling and on all balconies, patios, and common areas of the property.');
+  para('Non-compliance may result in: (1) Service of a 10-Day Notice to Comply with Agreement or Vacate; (2) Forfeiture of all or part of your security deposit; (3) Eviction action.');
+  responsibleTenants.forEach(t => initialsLine(t.name));
+  if (!responsibleTenants.length) initialsLine();
+
+  // ── SECTION 6 ──
+  sectionHead('Section 6 — Mold Handout');
+  infoTable([['Owner\'s Name', owner], ['Residents\' Names', tNames], ['Property Address', address]]);
+  para('Molds are microscopic organisms that produce enzymes to digest organic matter and spores to reproduce. Problems arise when mold starts digesting organic materials in our homes. The way to control mold growth is to control moisture. To control mold growth: Fix any moisture problems; stop all water leaks; repair leaking roofs and plumbing; increase air circulation; install and use exhaust fans in bathrooms, kitchens, and laundry rooms; ventilate and insulate the attic and crawlspaces; clean and dry water-damaged materials within 24 to 48 hours; vacuum and clean your home regularly. If you or your family members have health problems that you suspect are caused by exposure to mold, you should consult with your physician.');
+  responsibleTenants.forEach(t => initialsLine(t.name));
+  if (!responsibleTenants.length) initialsLine();
+
+  // ── SECTION 7 ──
+  sectionHead('Section 7 — Lead Warning Statement');
+  infoTable([['Owner\'s Name', owner], ['Residents\' Names', tNames], ['Property Address', address]]);
+  para('Housing built before 1978 may contain lead-based paint. Lead-based paint, paint chips, and dust can pose health hazards if not managed properly. Lead exposure is especially harmful to young children and pregnant women. Owner\'s Disclosure: The owner has no knowledge of lead-based paint and/or lead-based paint hazards in the housing, and has no reports or records pertaining to lead-based paint. Resident has received the pamphlet Protect Your Family from Lead in Your Home.');
+  responsibleTenants.forEach(t => initialsLine(t.name));
+  if (!responsibleTenants.length) initialsLine();
+
+  // ── SECTION 8 ──
+  sectionHead('Section 8 — Insurance Addendum');
+  para('For the duration of the Lease, Resident is required to maintain $100,000 Limit of Liability insurance for Resident\'s legal liability for damage to Owner\'s property for fire, smoke, explosion, backup or overflow of sewer, drain or sump, and water damage. Resident is required to furnish Owner with evidence of Required Insurance prior to occupancy and at the time of each lease renewal period. If at any time Resident does not have Required Insurance, Resident is in breach of the Lease and Owner shall have the right but not the obligation to purchase Required Insurance coverage protecting the sole interest of the Owner and seek contractual reimbursement from the Resident.');
+  responsibleTenants.forEach(t => initialsLine(t.name));
+  if (!responsibleTenants.length) initialsLine();
+
+  // ── SECTION 9 ──
+  sectionHead('Section 9 — Credit Reporting Addendum');
+  para(`This Addendum allows Owner to report on-time or delinquent payments made by the Resident starting ${lStart}. Owner will provide accurate information to a credit reporting service on at least a monthly basis and will work to comply with the requirements of the Fair Credit Reporting Act, 15 U.S.C. § 1681, et seq., and any and all other applicable federal or state laws.`);
+  tableRow(['Description', 'Amount'], [contentW * 0.7, contentW * 0.3], true);
+  [['Rent Income', mRent], ['Pet Rent', pRent], ['Total', totMo]].forEach(([d,a],i) => tableRow([d,a],[contentW*0.7,contentW*0.3],false,i%2===0));
+  y += 8;
+  responsibleTenants.forEach(t => initialsLine(t.name));
+  if (!responsibleTenants.length) initialsLine();
+
+  // ── SECTION 10 ──
+  sectionHead('Section 10 — Pet Addendum');
+  infoTable([['Owner\'s Name', owner], ['Residents\' Names', tNames], ['Property Address', address]]);
+
+  subHead('10.2 Authorized Pets');
+  if (pets.length > 0) {
+    pets.forEach((p, i) => {
+      const parts = [p.name, p.breed, p.weight ? p.weight + ' lbs' : '', p.age ? p.age + ' yrs' : ''].filter(Boolean);
+      listItem(parts.join(', '), i + 1, { bullet: '•' });
+    });
+  } else {
+    para('{{PET_LIST}}');
+  }
+
+  subHead('10.3 Fee Information');
+  tableRow(['Description', 'Amount'], [contentW * 0.7, contentW * 0.3], true);
+  [['Refundable Pet Deposit', pDep], ['Monthly Pet Rent', pRent]].forEach(([d,a],i) => tableRow([d,a],[contentW*0.7,contentW*0.3],false,i%2===0));
+  y += 8;
+
+  subHead('10.4 Pet Terms and Conditions');
+  para('The pet must be registered with the county of the above-listed address. The pet must have proof of all shots and vaccinations and be spayed or neutered. No pets visiting or pet sitting shall be allowed at the property. The pet will not be allowed out of the unit unless on a leash not to exceed five (5) feet. The Resident must maintain a $100,000 pet liability insurance policy throughout the tenancy.');
+  para('Carpet and Flooring: Residents agree to replace ALL carpets at the property if a cat or dog damages the carpet. Residents agree to refinish entire hardwood floors if a cat or dog damages the flooring. Residents understand that security deposit and pet deposit will not cover the expense of replacing/refinishing the carpet/hardwood floors throughout the property.');
+  para('Flea Infestation: If there is a flea infestation after the Residents have moved in which makes the property unsuitable for rent, the Residents are responsible for the loss of rent to the Owner. The average flea treatment takes 45-60 days.');
+  para('Required Move-Out Cleaning: Resident agrees to hire and pay professionals for: (1) Vent cleaning and installing new filters; (2) Carpet cleaning and addressing pet odor (if any). Professionals must perform the above cleaning within three (3) days after move-out; proof of work must be provided to the Owner.');
+
+  sigLine('Resident Signature');
+
+  // ── SECTION 11 ──
+  sectionHead('Section 11 — Property Condition Report');
+  infoTable([
+    ['Owner\'s Name', owner],
+    ['Residents\' Names', tNames],
+    ['Property Address', address],
+    ['Number of Smoke/CO Alarms', '8'],
+    ['Tested On', agDate],
+  ]);
+  tableRow(['Area', 'Condition'], [contentW * 0.4, contentW * 0.6], true);
+  [
+    ['Living Room', 'Clean and in good condition'],
+    ['Dining Room & Halls', 'Clean and in good condition'],
+    ['Kitchen', 'Clean and in good condition'],
+    ['Bedrooms', 'Clean and in good condition'],
+    ['Bathrooms', 'Clean and in good condition'],
+    ['Floors', 'Clean and in good condition'],
+    ['Drapes, Blinds, Windows', 'Clean and in good condition'],
+    ['Appliances', 'Clean and in good condition'],
+    ['Water Heater (\u2264 120\u00b0F)', 'Yes'],
+    ['Visible Pests', 'None'],
+  ].forEach(([a,c],i) => tableRow([a,c],[contentW*0.4,contentW*0.6],false,i%2===0));
+  y += 8;
+  para('Resident(s) agree that the Premises is clean, sanitary, and in good operating condition. If the Residents find any damage or excessive sign of wear and tear, they must report to the Owner within 14 days of move-in via email or in writing. Verbal or text message is not an acceptable method to communicate damages.');
+  sigLine('Resident Signature');
+
+  // ── SECTION 12 ──
+  sectionHead('Section 12 — Yard / Lawn Maintenance');
+  para('In renting this house from Owner, it is agreed and understood that the Residents are required to do the following:');
+  const yardItems = [
+    'Mow and Trim the lawn a minimum of once every other week during the growing season (generally March through October).',
+    'Trim and Prune bushes, hedges, and trees of excess growth a minimum of once each year or as necessary.',
+    'Weed and Remove grass in flower beds a minimum of once every 90 days during the growing season. Remove any weeds and grass growing at curbs, sidewalks, and driveways at all times.',
+    'Water the lawn and yard to maintain a healthy root system for the lawn and plants.',
+    'Yard Waste — All clippings and other yard wastes must be removed from the property at the Residents\' own expense.',
+    'Down Spouts — Keep bottom drains free of debris.',
+    'BBQ Grill — Keep at least 10 feet away from the structure of the house.',
+    'No trees can be removed without the Owner\'s written approval.',
+  ];
+  ['A','B','C','D','E','F','G','H'].forEach((letter, i) => listItem(yardItems[i], null, { bullet: `${letter}.` }));
+  para('Winterizing Water Pipes: When freezing weather is expected: (1) Keep room temperature at a level to sufficiently warm the walls containing water pipes; (2) Leave cabinet doors open below kitchen and bathroom sinks; (3) Cold water taps may be left running at a light trickle when temperatures are expected to plunge; (4) Wrap outdoor faucets or provide commercial insulation and disconnect shut-off valves to outdoor faucets where possible.');
+  sigLine('Resident Signature');
+
+  // ── SIGNATURES ──
+  sectionHead('Signatures');
+  para(`This Residential Lease Agreement is entered into as of ${agDate} between Owner ${owner} and Residents ${tNames} for the Premises at ${address}.`);
+  y += 10;
+  sigLine('Owner Signature', owner);
+  responsibleTenants.forEach(t => sigLine('Resident Signature', t.name));
+  if (!responsibleTenants.length) sigLine('Resident Signature');
+
+  y += 20;
+  doc.setFont(FONT_SANS, 'normal');
+  doc.setFontSize(SIZE_SMALL);
+  doc.setTextColor(...C_LIGHT);
+  doc.text('This agreement is governed by the laws of the State of Washington.', pageW / 2, y, { align: 'center' });
+
+  // save
+  const dateStr = agDate.replace(/\//g, '-');
+  const nameStr = tNames !== '{{TENANT_NAMES}}' ? tNames.split(',')[0].trim().replace(/\s+/g, '_') : 'Tenant';
+  doc.save(`Lease_Agreement_${nameStr}_${dateStr}.pdf`);
+}
+
+function clearForm() {
+  if (!confirm('Clear all form data?')) return;
+  document.querySelectorAll('input, select, textarea').forEach(el => {
+    if (el.type === 'select-one') el.selectedIndex = 0;
+    else el.value = '';
+  });
+  document.getElementById('ownerName').value = 'Mohammad Sarhan';
+  document.getElementById('addr1').value = '10827 110th Ave NE';
+  document.getElementById('addr2').value = 'Kirkland, WA 98033';
+  tenants = [{ name: '', role: 'Financially Responsible', phone: '', email: '' }];
+  pets = [];
+  vehicles = [];
+  renderTenantCards();
+  renderPetCards();
+  renderVehicleCards();
+  update();
+}
+</script>
+</body>
+</html>
