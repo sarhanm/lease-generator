@@ -45,7 +45,7 @@ Resident shall pay monthly rent and other charges in the following amounts:
 
 **Prorated Rent**, if any, shall apply to the second month of tenancy and shall be payable on the first day of the second month of tenancy.
 
-The total amount of monthly rent due, which includes the monthly Premises rent, any utilities, monthly parking space rent, monthly storage locker rent, and any other monthly recurring charges, is considered "Rent" and is payable in advance by the first day of each and every month (hereinafter called the "Rent Due Date") during the said term to Owner, or any such other place that the Owner may from time to time designate.
+The total amount of monthly rent due, which includes the monthly Premises rent, any utilities, and any other monthly recurring charges, is considered "Rent" and is payable in advance by the first day of each and every month (hereinafter called the "Rent Due Date") during the said term to Owner, or any such other place that the Owner may from time to time designate.
 
 **Application of Payments:** Any rent unpaid by the due date is termed delinquent. Regardless of any restrictive designation or instruction on or accompanying any payment, Owner shall apply funds received from Resident as follows: rent shall be first applied to any past due rent (which includes unpaid utilities) prior to being applied to the current month's rent, then to late payment charges, to notice fees, to damages, to repairs, and finally to miscellaneous charges.
 
@@ -123,7 +123,7 @@ Resident is authorized to park the following vehicle(s) on the property ("Author
 
 - **{{AUTHORIZED_VEHICLES}}**
 
-Recreation vehicles, trailers, boats, and inoperable or unlicensed automobiles may not be parked or stored on the Property. No repair to any vehicles may be carried out on the property or any parking area. Tenant hereby grants to Landlord the undisputed right without liability to remove any vehicles from any parking spaces which are inoperable (in Owner's opinion), unlicensed or incorrectly parked, and remain inoperable, unlicensed, or incorrectly parked for twenty-four (24) hours. Resident further agrees that any vehicle owned by Resident remaining on the property after the termination of occupancy may be immediately removed by Owner with full immunity from damages for such removal. All costs incurred for said vehicle removal shall be payable by the Resident in addition to an administration fee of **$100.00**. Resident shall be charged for the cleanup of any fluids leaking from their own or their guest's vehicles, with such charge being Additional Rent. Resident agrees to park no more than one vehicle per licensed driver at the property.
+Recreation vehicles, trailers, boats, and inoperable or unlicensed automobiles may not be parked or stored on the Property. No repair to any vehicles may be carried out on the property or any parking area. Resident hereby grants to Owner the undisputed right without liability to remove any vehicles from any parking spaces which are inoperable (in Owner's opinion), unlicensed or incorrectly parked, and remain inoperable, unlicensed, or incorrectly parked for twenty-four (24) hours. Resident further agrees that any vehicle owned by Resident remaining on the property after the termination of occupancy may be immediately removed by Owner with full immunity from damages for such removal. All costs incurred for said vehicle removal shall be payable by the Resident in addition to an administration fee of **$100.00**. Resident shall be charged for the cleanup of any fluids leaking from their own or their guest's vehicles, with such charge being Additional Rent. Resident agrees to park no more than one vehicle per licensed driver at the property.
 
 ---
 
@@ -139,7 +139,7 @@ Recreation vehicles, trailers, boats, and inoperable or unlicensed automobiles m
 
 ### 1.12 Early Move-Out
 
-If Resident vacates the Premises prior to the expiration hereof or without notice as required in this lease, Resident shall be liable for additional rent as provided for in RCW 59.18.310. If for any reason during the term of the lease you need to break the lease, you will be liable for any expenses until a replacement Resident is located and placed. In addition to the payment of rent, you will also be responsible for payment of a one-month rent re-letting fee, which is a stipulated damages clause for the expense of advertising and finding a new Resident, and the payment of all utilities until the new Resident is moved in.
+If Resident vacates the Premises prior to the expiration hereof or without notice as required in this lease, Resident shall be liable for additional rent as provided for in RCW 59.18.310. If for any reason during the term of the lease you need to break the lease, you will be liable for any expenses until a replacement resident is located and placed. In addition to the payment of rent, you will also be responsible for payment of a one-month rent Re-letting fee, this is a stipulated damages clause for the expense of advertising and office time for finding a new resident, and the payment of all utilities until the new resident is moved in.
 
 **Lease Buy-Out:** If you desire to buy out your Lease Agreement early, please refer to Section 2 (Rental Agreement Buy-Out Agreement). A lease buy-out may not be available in all cases.
 
@@ -333,7 +333,7 @@ Owners may mortgage the Premises or Property or grant deeds of trust with respec
 
 ### 1.35 General Terms
 
-No oral agreements have been entered into with respect to this Agreement. This Agreement shall not be modified except by an instrument in writing signed by the Resident and Owner. In the event of more than one Resident, each Resident is jointly and severally liable for each provision of this Agreement. Each Resident states that he or she is of legal age to enter into this Agreement. Time is of the essence of this Agreement.
+No oral agreements have been entered into with respect to this Agreement. This Agreement shall not be modified except by an instrument in writing signed by the Resident and Owner. In the event of more than one Resident, each Resident is jointly and severally liable for each provision of this Agreement. Each Resident states that he or she is of legal age to enter into this Agreement. All obligations hereunder are to be performed in the County and state where the property is located. Time is of the essence of this Agreement. Neither this Agreement nor any memorandum thereof may be recorded without the express written consent of the Owner.
 
 ---
 
@@ -448,9 +448,9 @@ h) Relighting of furnaces, gas fireplaces, and hot water heaters.
 
 ### 1.41 Damage or Destruction of Premises / Property
 
-In the event of damage to the Premises or Property by fire, water, or other hazards, and the damages are such that Resident's occupancy can be continued, Owner shall make such repairs as needed with reasonable promptness, and rent shall **not** abate during the period of such repairs. Under no circumstances shall rent abate if damages are caused by the Resident.
+In the event of damage to the Premises or Property by fire, water, or other hazards, and the damages are such that Resident's occupancy can be continued, Owner shall make such repairs as needed with reasonable promptness, and rent shall **not** abate during the period of such repairs. If in Owner's opinion, the Premises or Property are so damaged as to be unfit for occupancy, and Owner elects to make such repairs, the rent provided for herein shall abate during the period of time the Premises are not occupied by Resident, but in all other respects, the terms and provisions hereof shall continue in full force and effect. Should repair necessitate Resident vacate the Premises for a period of time, Resident is obligated to vacate as instructed by Owner and rent shall abate during this period. Under no circumstances shall rent abate if damages are caused by the Resident.
 
-In the event that the Premises are so damaged or destroyed as to be, in the sole opinion of Owner, incapable of being satisfactorily repaired within a reasonable period of time, then this Agreement shall terminate effective as of the date of the damage or destruction, and Resident shall immediately vacate.
+In the event that the Premises are so damaged or destroyed as to be, in the sole opinion of Owner, incapable of being satisfactorily repaired within a reasonable period of time, then this Agreement shall terminate effective as of the date of the damage or destruction, and Resident shall immediately vacate. In such a case, Resident shall pay rent pro-rata through the day Resident vacates the Premises.
 
 ---
 
@@ -502,13 +502,13 @@ Resident acknowledges that carpet stains, water stains, and high heel or hard-so
 
 - Every Resident who has signed this Agreement has personally viewed the property and accepts it in its current condition, without any representations or warranties as to its condition or potential for improvement.
 - Resident(s) has confirmed and is satisfied with all aspects of the property.
-- The rent will increase by **{{RENT_INCREASE_AMOUNT}}** starting **{{RENT_INCREASE_DATE}}**.
+- Rent Increase: **{{RENT_INCREASE_AMOUNT}}** effective **{{RENT_INCREASE_DATE}}** (if applicable; enter N/A if no increase is planned).
 
 ---
 
 ### 1.48 Law of Real Estate Agency
 
-The Agent involved in this Agreement is an Owner's Agent unless otherwise stated herein.
+The Resident's initials in this section indicate receipt of the pamphlet on the Law of Real Estate Agency, explaining the differences between a Resident's Agent and an Owner's Agent. The Agent involved in this Agreement is an Owner's Agent unless otherwise stated herein.
 
 ---
 
@@ -580,7 +580,7 @@ After you give notice of buy-out, the rental agreement gives Owner the right to 
 
 ### 2.6 Compliance Essential
 
-Owner's deposit of all amounts due under the buy-out addendum constitutes approval of the new termination date stated in your notice of buy-out. If you fail to comply with any of the procedures or requirements in this Agreement after Owner deposits such monies, your buy-out right and this agreement will be voided automatically; and (1) any amounts you have paid under this agreement will become part of your security deposit or last month's rent, and (2) the lease will continue without buy-out.
+Owner's deposit of all amounts due under the buy-out addendum constitutes approval of the new termination date stated in your notice of buy-out. If you fail to comply with any of the procedures or requirements in this Agreement after Owner deposits such monies, your buy-out right and this agreement will be voided automatically; and (1) any amounts you have paid under this agreement will become part of your security deposit or last month's rent, and (2) the lease will continue without buy-out. Then, if you move out early, you are subject to all lease remedies, including a re-letting fee of one (1) month's rent and liability for all rents for the remainder of the original lease term.
 
 ---
 
@@ -828,7 +828,7 @@ The Owner will allow the Resident to have the following pets in the designated P
 - The pet must have proof of all shots and vaccinations and be spayed or neutered.
 - No pets visiting or pet sitting shall be allowed at the property.
 
-Return of the pet damage deposit is conditioned upon restoring the Premises to their condition at the commencement of the tenancy, less normal wear and tear. Any damage caused by the pets, including but not limited to any cleaning, fumigation, or damage repairs to the unit, building, grounds, flooring, walls, trim, finishes, tiles, carpeting, etc., will be the full responsibility of the Resident.
+Return of the pet damage deposit is conditioned upon restoring the Premises to their condition at the commencement of the tenancy, less normal wear and tear. The pet damage deposit is refundable at the end of the tenancy subject to this condition. Any damage caused by the pets, including but not limited to any cleaning, fumigation, or damage repairs to the unit, building, grounds, flooring, walls, trim, finishes, tiles, carpeting, etc., will be the full responsibility of the Resident and shall be deducted from the pet damage deposit. Any additional charges owed will be the responsibility of the Resident.
 
 The pet will not be allowed out of the unit unless it is in the custody of the Resident and on a leash not to exceed **five (5) feet** in length, if applicable. The pet will not be left outside of the unit at any time while unattended.
 
@@ -855,9 +855,9 @@ Professionals must perform the above cleaning within three (3) days after move-o
 
 ---
 
-**By signing below, you acknowledge and agree to the terms in Section 9.**
+**By initialing below, you acknowledge and agree to the terms in Section 9.**
 
-Resident Signature: __________________________________ Date: __________
+Resident Initials: __________ Date: __________
 
 ---
 
@@ -900,9 +900,9 @@ If the Residents find any damage or excessive sign of wear and tear, they must r
 
 ---
 
-**By signing below, you acknowledge and agree to the terms in Section 10.**
+**By initialing below, you acknowledge and agree to the terms in Section 10.**
 
-Resident Signature: __________________________________ Date: __________
+Resident Initials: __________ Date: __________
 
 ---
 
@@ -943,15 +943,17 @@ When freezing weather is expected, take the following precautions:
 
 ---
 
-**By signing below, you acknowledge and agree to the terms in Section 11.**
+**By initialing below, you acknowledge and agree to the terms in Section 11.**
 
-Resident Signature: __________________________________ Date: __________
+Resident Initials: __________ Date: __________
 
 ---
 
 ## SIGNATURES
 
-This Residential Lease Agreement is entered into as of **{{AGREEMENT_DATE}}** between Owner **{{OWNER_NAME}}** and Residents **{{TENANT_NAMES}}** for the Premises at **{{PROPERTY_ADDRESS_1}}, {{PROPERTY_ADDRESS_2}}**.
+This Residential Lease Agreement is entered into between Owner **{{OWNER_NAME}}** and Residents **{{TENANT_NAMES}}** for the Premises at **{{PROPERTY_ADDRESS_1}}, {{PROPERTY_ADDRESS_2}}**.
+
+**Agreement Date:** ___________________
 
 ---
 

@@ -583,7 +583,7 @@ window.onload = () => {
 // TENANT MANAGEMENT
 // ═══════════════════════════════════════════════
 function addTenant() {
-  tenants.push({ name: '', role: 'Other Occupant', phone: '', email: '' });
+  tenants.push({ name: '', role: 'Financially Responsible', phone: '', email: '' });
   renderTenantCards();
   update();
 }
@@ -605,16 +605,18 @@ function renderTenantCards() {
       <input type="text" value="${esc(t.name)}" placeholder="Full legal name"
         oninput="tenants[${i}].name=this.value;update()">
       <label>Role</label>
-      <select onchange="tenants[${i}].role=this.value;update()">
+      <select onchange="tenants[${i}].role=this.value;renderTenantCards();update()">
         <option ${t.role==='Financially Responsible'?'selected':''}>Financially Responsible</option>
-        <option ${t.role==='Other Occupant'?'selected':''}>Other Occupant</option>
+        <option ${t.role==='Minor'?'selected':''}>Minor</option>
       </select>
+      ${t.role !== 'Minor' ? `
       <label>Phone</label>
       <input type="tel" value="${esc(t.phone)}" placeholder="(555) 555-5555"
         oninput="tenants[${i}].phone=this.value;update()">
       <label>Email</label>
       <input type="email" value="${esc(t.email)}" placeholder="email@example.com"
         oninput="tenants[${i}].email=this.value;update()">
+      ` : `<p style="font-size:11px;color:#999;margin:4px 0 6px;">Minor — no contact info or signature required.</p>`}
     </div>
   `).join('');
 }
@@ -786,7 +788,7 @@ function getVehicleList() {
 }
 
 function getSignatureBlocks() {
-  const resp = tenants.filter(t => t.role === 'Financially Responsible' && t.name);
+  const resp = tenants.filter(t => t.role !== 'Minor' && t.name);
   if (!resp.length) return `<span class="placeholder">{{SIGNATURE_BLOCKS}}</span>`;
   return resp.map(t => `
     <div class="sig-block">
@@ -808,7 +810,7 @@ function getSignatureBlocks() {
 }
 
 function initialsBlock() {
-  const resp = tenants.filter(t => t.role === 'Financially Responsible' && t.name);
+  const resp = tenants.filter(t => t.role !== 'Minor' && t.name);
   if (!resp.length) {
     return `<div class="initials-block"><div class="initials-line"></div><div class="initials-caption">Resident Initials &nbsp;&nbsp;&nbsp; Date: __________</div></div>`;
   }
@@ -882,7 +884,10 @@ function update() {
 
   // Build occupant list as plain text for markdown
   const occupantListMd = tenants.filter(t => t.name).map(t => {
-    let line = `**${t.name}** — ${t.role}`;
+    if (t.role === 'Minor') {
+      return `**${t.name}** — Minor (not a signatory)`;
+    }
+    let line = `**${t.name}** — Financially Responsible`;
     if (t.phone) line += `  \n${t.phone}`;
     if (t.email) line += `  \n${t.email}`;
     return line;
@@ -906,13 +911,13 @@ function update() {
 
   // Build signature blocks
   const sigBlocksMd = tenants
-    .filter(t => t.role === 'Financially Responsible' && t.name)
-    .map(t => `**RESIDENT:** ${t.name}  \nSignature: __________________________________ Date: __________  \n${t.email ? t.email : ''}${t.phone ? ' · '+t.phone : ''}`)
-    .join('\n\n') || 'Signature: __________________________________ Date: __________';
+    .filter(t => t.role !== 'Minor' && t.name)
+    .map(t => `**RESIDENT:**\n\nSignature: __________________________________ Date: __________\n\nPrinted Name: ${t.name}\n\n${t.email ? t.email : ''}${t.phone ? ' · '+t.phone : ''}`)
+    .join('\n\n---\n\n') || 'Signature: __________________________________ Date: __________\n\nPrinted Name: __________________________________';
 
   // Build initials line
   const initialsLineMd = tenants
-    .filter(t => t.role === 'Financially Responsible' && t.name)
+    .filter(t => t.role !== 'Minor' && t.name)
     .map(t => `*Initials — ${t.name}*: __________ Date: __________`)
     .join('  \n') || '*Initials*: __________ Date: __________';
 
